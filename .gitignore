@@ -1,4 +1,4 @@
-data/
+/data/
 /CNN_STFTmonitoring.h5
 /.ipynb_checkpoints/
 .idea
