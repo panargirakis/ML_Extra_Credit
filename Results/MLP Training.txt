@@ -1,0 +1,223 @@
+Run 1...
+Train on 7231 samples, validate on 804 samples
+Epoch 1/10
+7231/7231 [==============================] - 6s 770us/step - loss: 0.6598 - acc: 0.6581 - val_loss: 0.8347 - val_acc: 0.4552
+
+Epoch 00001: val_acc improved from -inf to 0.45522, saving model to GRAZ_MLP__run_1
+Epoch 2/10
+7231/7231 [==============================] - 3s 448us/step - loss: 0.4151 - acc: 0.8180 - val_loss: 0.9270 - val_acc: 0.5460
+
+Epoch 00002: val_acc improved from 0.45522 to 0.54602, saving model to GRAZ_MLP__run_1
+Epoch 3/10
+7231/7231 [==============================] - 3s 453us/step - loss: 0.2784 - acc: 0.8862 - val_loss: 0.9875 - val_acc: 0.5808
+
+Epoch 00003: val_acc improved from 0.54602 to 0.58085, saving model to GRAZ_MLP__run_1
+Epoch 4/10
+7231/7231 [==============================] - 3s 464us/step - loss: 0.1954 - acc: 0.9245 - val_loss: 0.9895 - val_acc: 0.6318
+
+Epoch 00004: val_acc improved from 0.58085 to 0.63184, saving model to GRAZ_MLP__run_1
+Epoch 5/10
+7231/7231 [==============================] - 3s 452us/step - loss: 0.1571 - acc: 0.9432 - val_loss: 1.3074 - val_acc: 0.5796
+
+Epoch 00005: val_acc did not improve from 0.63184
+Epoch 6/10
+7231/7231 [==============================] - 3s 461us/step - loss: 0.1118 - acc: 0.9617 - val_loss: 1.3248 - val_acc: 0.6405
+
+Epoch 00006: val_acc improved from 0.63184 to 0.64055, saving model to GRAZ_MLP__run_1
+Epoch 7/10
+7231/7231 [==============================] - 3s 462us/step - loss: 0.0804 - acc: 0.9708 - val_loss: 2.1107 - val_acc: 0.5448 - ETA: 0s - loss: 0.0779 - acc: 0.9730
+
+Epoch 00007: val_acc did not improve from 0.64055
+Epoch 8/10
+7231/7231 [==============================] - 3s 444us/step - loss: 0.0727 - acc: 0.9748 - val_loss: 2.2383 - val_acc: 0.5585
+
+Epoch 00008: val_acc did not improve from 0.64055
+Epoch 9/10
+7231/7231 [==============================] - 3s 465us/step - loss: 0.0573 - acc: 0.9790 - val_loss: 1.7762 - val_acc: 0.6095
+
+Epoch 00009: val_acc did not improve from 0.64055
+Epoch 10/10
+7231/7231 [==============================] - 3s 454us/step - loss: 0.0481 - acc: 0.9844 - val_loss: 2.0016 - val_acc: 0.5908
+
+Epoch 00010: val_acc did not improve from 0.64055
+Evaluating model on test set...
+Result on test set: acc: 83.47%
+Run 2...
+Train on 7231 samples, validate on 804 samples
+Epoch 1/10
+7231/7231 [==============================] - 6s 805us/step - loss: 0.6593 - acc: 0.6512 - val_loss: 0.6753 - val_acc: 0.5746
+
+Epoch 00001: val_acc improved from -inf to 0.57463, saving model to GRAZ_MLP__run_2
+Epoch 2/10
+7231/7231 [==============================] - 3s 462us/step - loss: 0.3952 - acc: 0.8197 - val_loss: 0.7419 - val_acc: 0.6020
+
+Epoch 00002: val_acc improved from 0.57463 to 0.60199, saving model to GRAZ_MLP__run_2
+Epoch 3/10
+7231/7231 [==============================] - 3s 450us/step - loss: 0.2640 - acc: 0.8912 - val_loss: 0.9205 - val_acc: 0.5846
+
+Epoch 00003: val_acc did not improve from 0.60199
+Epoch 4/10
+7231/7231 [==============================] - 3s 447us/step - loss: 0.1840 - acc: 0.9292 - val_loss: 1.1267 - val_acc: 0.6020
+
+Epoch 00004: val_acc improved from 0.60199 to 0.60199, saving model to GRAZ_MLP__run_2
+Epoch 5/10
+7231/7231 [==============================] - 3s 460us/step - loss: 0.1223 - acc: 0.9541 - val_loss: 1.6249 - val_acc: 0.5398
+
+Epoch 00005: val_acc did not improve from 0.60199
+Epoch 6/10
+7231/7231 [==============================] - 3s 429us/step - loss: 0.0932 - acc: 0.9652 - val_loss: 1.5378 - val_acc: 0.5958
+
+Epoch 00006: val_acc did not improve from 0.60199
+Epoch 7/10
+7231/7231 [==============================] - 3s 453us/step - loss: 0.0847 - acc: 0.9725 - val_loss: 1.3648 - val_acc: 0.6343
+
+Epoch 00007: val_acc improved from 0.60199 to 0.63433, saving model to GRAZ_MLP__run_2
+Epoch 8/10
+7231/7231 [==============================] - 3s 443us/step - loss: 0.0658 - acc: 0.9770 - val_loss: 1.4582 - val_acc: 0.6393
+
+Epoch 00008: val_acc improved from 0.63433 to 0.63930, saving model to GRAZ_MLP__run_2
+Epoch 9/10
+7231/7231 [==============================] - 3s 430us/step - loss: 0.0464 - acc: 0.9848 - val_loss: 1.5041 - val_acc: 0.6729
+
+Epoch 00009: val_acc improved from 0.63930 to 0.67289, saving model to GRAZ_MLP__run_2
+Epoch 10/10
+7231/7231 [==============================] - 3s 475us/step - loss: 0.0392 - acc: 0.9860 - val_loss: 1.9683 - val_acc: 0.6269
+
+Epoch 00010: val_acc did not improve from 0.67289
+Evaluating model on test set...
+Result on test set: acc: 83.82%
+Run 3...
+Train on 7231 samples, validate on 804 samples
+Epoch 1/10
+7231/7231 [==============================] - 6s 781us/step - loss: 0.7524 - acc: 0.6025 - val_loss: 0.6663 - val_acc: 0.5498
+
+Epoch 00001: val_acc improved from -inf to 0.54975, saving model to GRAZ_MLP__run_3
+Epoch 2/10
+7231/7231 [==============================] - 3s 454us/step - loss: 0.4751 - acc: 0.7724 - val_loss: 0.6912 - val_acc: 0.5958 - ETA: 0s - loss: 0.4938 - acc: 0.7615
+
+Epoch 00002: val_acc improved from 0.54975 to 0.59577, saving model to GRAZ_MLP__run_3
+Epoch 3/10
+7231/7231 [==============================] - 3s 464us/step - loss: 0.3389 - acc: 0.8542 - val_loss: 0.7536 - val_acc: 0.6132
+
+Epoch 00003: val_acc improved from 0.59577 to 0.61318, saving model to GRAZ_MLP__run_3
+Epoch 4/10
+7231/7231 [==============================] - 3s 453us/step - loss: 0.2520 - acc: 0.8964 - val_loss: 0.7544 - val_acc: 0.6567
+
+Epoch 00004: val_acc improved from 0.61318 to 0.65672, saving model to GRAZ_MLP__run_3
+Epoch 5/10
+7231/7231 [==============================] - 3s 454us/step - loss: 0.1892 - acc: 0.9267 - val_loss: 1.2687 - val_acc: 0.5448
+
+Epoch 00005: val_acc did not improve from 0.65672
+Epoch 6/10
+7231/7231 [==============================] - 4s 486us/step - loss: 0.1364 - acc: 0.9484 - val_loss: 1.7779 - val_acc: 0.5025
+
+Epoch 00006: val_acc did not improve from 0.65672
+Epoch 7/10
+7231/7231 [==============================] - 3s 445us/step - loss: 0.1052 - acc: 0.9636 - val_loss: 1.6744 - val_acc: 0.5386
+
+Epoch 00007: val_acc did not improve from 0.65672
+Epoch 8/10
+7231/7231 [==============================] - 3s 474us/step - loss: 0.0771 - acc: 0.9766 - val_loss: 1.7143 - val_acc: 0.5634
+
+Epoch 00008: val_acc did not improve from 0.65672
+Epoch 9/10
+7231/7231 [==============================] - 3s 451us/step - loss: 0.0718 - acc: 0.9766 - val_loss: 2.0076 - val_acc: 0.5634
+
+Epoch 00009: val_acc did not improve from 0.65672
+Epoch 10/10
+7231/7231 [==============================] - 3s 455us/step - loss: 0.0551 - acc: 0.9817 - val_loss: 1.7168 - val_acc: 0.6020
+
+Epoch 00010: val_acc did not improve from 0.65672
+Evaluating model on test set...
+Result on test set: acc: 82.53%
+Run 4...
+Train on 7231 samples, validate on 804 samples
+Epoch 1/10
+7231/7231 [==============================] - 6s 798us/step - loss: 0.7430 - acc: 0.6064 - val_loss: 0.6056 - val_acc: 0.6766
+
+Epoch 00001: val_acc improved from -inf to 0.67662, saving model to GRAZ_MLP__run_4
+Epoch 2/10
+7231/7231 [==============================] - 3s 452us/step - loss: 0.4342 - acc: 0.7944 - val_loss: 0.6520 - val_acc: 0.6418
+
+Epoch 00002: val_acc did not improve from 0.67662
+Epoch 3/10
+7231/7231 [==============================] - 3s 435us/step - loss: 0.2841 - acc: 0.8791 - val_loss: 1.0753 - val_acc: 0.5771
+
+Epoch 00003: val_acc did not improve from 0.67662
+Epoch 4/10
+7231/7231 [==============================] - 3s 452us/step - loss: 0.2007 - acc: 0.9214 - val_loss: 0.9188 - val_acc: 0.6567
+
+Epoch 00004: val_acc did not improve from 0.67662
+Epoch 5/10
+7231/7231 [==============================] - 3s 449us/step - loss: 0.1351 - acc: 0.9527 - val_loss: 1.2895 - val_acc: 0.6169
+
+Epoch 00005: val_acc did not improve from 0.67662
+Epoch 6/10
+7231/7231 [==============================] - 3s 465us/step - loss: 0.0949 - acc: 0.9690 - val_loss: 1.1715 - val_acc: 0.6517
+
+Epoch 00006: val_acc did not improve from 0.67662
+Epoch 7/10
+7231/7231 [==============================] - 3s 458us/step - loss: 0.0826 - acc: 0.9740 - val_loss: 1.5173 - val_acc: 0.6393
+
+Epoch 00007: val_acc did not improve from 0.67662
+Epoch 8/10
+7231/7231 [==============================] - 3s 463us/step - loss: 0.0655 - acc: 0.9770 - val_loss: 2.1120 - val_acc: 0.5871
+
+Epoch 00008: val_acc did not improve from 0.67662
+Epoch 9/10
+7231/7231 [==============================] - 3s 450us/step - loss: 0.0703 - acc: 0.9751 - val_loss: 1.3503 - val_acc: 0.6791
+
+Epoch 00009: val_acc improved from 0.67662 to 0.67910, saving model to GRAZ_MLP__run_4
+Epoch 10/10
+7231/7231 [==============================] - 3s 447us/step - loss: 0.0604 - acc: 0.9794 - val_loss: 1.9605 - val_acc: 0.6095
+
+Epoch 00010: val_acc did not improve from 0.67910
+Evaluating model on test set...
+Result on test set: acc: 84.92%
+Run 5...
+Train on 7232 samples, validate on 804 samples
+Epoch 1/10
+7232/7232 [==============================] - 6s 813us/step - loss: 0.6854 - acc: 0.6256 - val_loss: 0.7687 - val_acc: 0.5137
+
+Epoch 00001: val_acc improved from -inf to 0.51368, saving model to GRAZ_MLP__run_5
+Epoch 2/10
+7232/7232 [==============================] - 3s 448us/step - loss: 0.4104 - acc: 0.8056 - val_loss: 0.6276 - val_acc: 0.6766
+
+Epoch 00002: val_acc improved from 0.51368 to 0.67662, saving model to GRAZ_MLP__run_5
+Epoch 3/10
+7232/7232 [==============================] - 3s 453us/step - loss: 0.2774 - acc: 0.8850 - val_loss: 1.1055 - val_acc: 0.5609
+
+Epoch 00003: val_acc did not improve from 0.67662
+Epoch 4/10
+7232/7232 [==============================] - 3s 445us/step - loss: 0.1800 - acc: 0.9307 - val_loss: 0.9538 - val_acc: 0.6455
+
+Epoch 00004: val_acc did not improve from 0.67662
+Epoch 5/10
+7232/7232 [==============================] - 3s 456us/step - loss: 0.1124 - acc: 0.9600 - val_loss: 1.2315 - val_acc: 0.6182
+
+Epoch 00005: val_acc did not improve from 0.67662
+Epoch 6/10
+7232/7232 [==============================] - 3s 461us/step - loss: 0.0919 - acc: 0.9682 - val_loss: 1.1282 - val_acc: 0.6368
+
+Epoch 00006: val_acc did not improve from 0.67662
+Epoch 7/10
+7232/7232 [==============================] - 3s 448us/step - loss: 0.0757 - acc: 0.9696 - val_loss: 1.5408 - val_acc: 0.6057
+
+Epoch 00007: val_acc did not improve from 0.67662
+Epoch 8/10
+7232/7232 [==============================] - 3s 465us/step - loss: 0.0685 - acc: 0.9755 - val_loss: 2.2516 - val_acc: 0.5361
+
+Epoch 00008: val_acc did not improve from 0.67662
+Epoch 9/10
+7232/7232 [==============================] - 3s 447us/step - loss: 0.0562 - acc: 0.9800 - val_loss: 2.0822 - val_acc: 0.5970
+
+Epoch 00009: val_acc did not improve from 0.67662
+Epoch 10/10
+7232/7232 [==============================] - 3s 448us/step - loss: 0.0469 - acc: 0.9833 - val_loss: 2.4923 - val_acc: 0.5460
+
+Epoch 00010: val_acc did not improve from 0.67662
+Evaluating model on test set...
+Result on test set: acc: 82.47%
+83.44% (+/- 0.91%)
+Saving CV values to file....
+CV values successfully saved!
