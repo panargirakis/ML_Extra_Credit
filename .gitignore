@@ -2,11 +2,11 @@
 /CNN_STFTmonitoring.h5
 /.ipynb_checkpoints/
 .idea
-/GRAZ_LSTM__run_1
-/GRAZ_LSTM__run_2
-/GRAZ_LSTM__run_3
-/GRAZ_LSTM__run_4
-/GRAZ_LSTM__run_5
+/Results/GRAZ_LSTM__run_1
+/Results/GRAZ_LSTM__run_2
+/Results/GRAZ_LSTM__run_3
+/Results/GRAZ_LSTM__run_4
+/Results/GRAZ_LSTM__run_5
 /GRAZ_MLP__run_1
 /GRAZ_MLP__run_2
 /GRAZ_MLP__run_3

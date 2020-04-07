@@ -4,26 +4,21 @@
 # # Neural Networks Architecture for Decoding EEG MI Data using Spectrogram Representations
 
 # ## Preparation
-#
 # In case that gumpy is not installed as a module, we need to specify the path to ``gumpy``. In addition, we wish to configure jupyter notebooks and any backend properly. Note that it may take some time for ``gumpy`` to load due to the number of dependencies
-
 
 from __future__ import print_function
 import os
 os.environ["THEANO_FLAGS"] = "device=gpu0"
 import sys
 sys.path.append('./gumpy')
-
 import gumpy
 import numpy as np
-
 import utils
+
+utils.print_version_info()
 
 # ## Setup parameters for the model and data
 # Before we jump into the processing, we first wish to specify some parameters (e.g. frequencies) that we know from the data.
-
-# In[3]:
-
 
 DEBUG = True
 CLASS_COUNT = 2
@@ -42,14 +37,12 @@ AXIS = 0
 # set random seed
 SEED = 42
 KFOLD = 5
-NumbItr = 10
+n_hidden_layers = 2
+neurons_per_layer = 100
+NumbItr = int(neurons_per_layer * n_hidden_layers / 20)
 
 # ## Load raw data
-#
 # Before training and testing a model, we need some data. The following code shows how to load a dataset using ``gumpy``.
-
-# In[4]:
-
 
 # specify the location of the GrazB datasets
 data_dir = './data/Graz'
@@ -64,11 +57,6 @@ grazb_data = gumpy.data.GrazB(data_dir, subject)
 x_train, y_train = utils.load_preprocess_data(grazb_data, True, LOWCUT, HIGHCUT, W0, Q, ANTI_DRIFT, CLASS_COUNT, CUTOFF,
                                               AXIS, FS)
 
-# ## Augment data
-
-# In[5]:
-
-
 x_augmented, y_augmented = gumpy.signal.sliding_window(data=x_train[:, :, :],
                                                        labels=y_train[:, :],
                                                        window_sz=4 * FS,
@@ -78,46 +66,49 @@ x_subject = x_augmented
 y_subject = y_augmented
 x_subject = np.rollaxis(x_subject, 2, 1)
 
-# # CNN model
-
-# In[6]:
-
-
 # from .model import KerasModel
 from keras.models import Sequential
-from keras.models import load_model
+from keras.layers import Dense, Activation, Flatten
+from keras.layers import Dropout
+from kapre.utils import Normalization2D
+from kapre.time_frequency import Spectrogram
+
 import kapre
 
-# # LSTM
 
-from keras.layers import Dense, LSTM as _LSTM
-
-
-def LSTM_model(input_shape, num_hidden_neurons=128,
-               num_layers=1, dropout=0.2, recurrent_dropout=0.2,
-               print_summary=False):
+def MLP_model(input_shape, dropout=0.5, print_summary=False):
+    # basis of the CNN_STFT is a Sequential network
     model = Sequential()
-    if num_layers > 1:
-        for i in range(1, num_layers, 1):
-            model.add(_LSTM(num_hidden_neurons, input_shape=input_shape,
-                            return_sequences=True, dropout=dropout, recurrent_dropout=recurrent_dropout))
-        model.add(_LSTM(num_hidden_neurons))
-    else:
-        model.add(_LSTM(num_hidden_neurons, input_shape=input_shape, dropout=dropout,
-                        recurrent_dropout=recurrent_dropout))
-    model.add(Dense(2, activation='softmax'))
+
+    # spectrogram creation using STFT
+    model.add(Spectrogram(n_dft = 128, n_hop = 16, input_shape = input_shape,
+              return_decibel_spectrogram = False, power_spectrogram = 2.0,
+              trainable_kernel = False, name = 'static_stft'))
+    model.add(Normalization2D(str_axis = 'freq'))
+    model.add(Flatten())
+    model.add(Dense(neurons_per_layer, activation='relu', input_shape=(784,)))
+    model.add(Dropout(0.2))
+
+    # custom number of hidden layers
+    for each in range(n_hidden_layers - 1):
+        model.add(Dense(neurons_per_layer, activation='relu'))
+        model.add(Dropout(0.2))
+
+    model.add(Dense(2))  # two classes only
+    model.add(Activation('softmax'))
 
     if print_summary:
         print(model.summary())
 
-        # compile the model
+    # compile the model
     model.compile(loss='categorical_crossentropy',
                   optimizer='adam',
                   metrics=['accuracy'])
 
-    # assign and return
+    # assign model and return
 
     return model
+
 
 
 from sklearn.model_selection import StratifiedKFold
@@ -130,13 +121,13 @@ ii = 1
 for train, test in kfold.split(x_subject, y_subject[:, 0]):
     print('Run ' + str(ii) + '...')
     # create callbacks
-    model_name_str = "ModelSave/" + 'GRAZ_LSTM_' + '_run_' + str(ii)
+    model_name_str = "ModelSave/" + 'GRAZ_MLP_' + '_run_' + str(ii)
 
     checkpoint = ModelCheckpoint(model_name_str, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
     callbacks_list = [checkpoint]
     # Fit the model
     # initialize and create the model
-    model = LSTM_model(x_subject.shape[1:], dropout=DROPOUT, print_summary=False)
+    model = MLP_model(x_subject.shape[1:], dropout=DROPOUT, print_summary=False)
 
     # fit model. If you specify monitor=True, then the model will create callbacks
     # and write its state to a HDF5 file
@@ -157,17 +148,16 @@ for train, test in kfold.split(x_subject, y_subject[:, 0]):
 print("%.2f%% (+/- %.2f%%)" % (np.mean(cvscores), np.std(cvscores)))
 cv_all_subjects = np.asarray(cvscores)
 print('Saving CV values to file....')
-np.savetxt("Results/" + 'GRAZ_CV_' + 'LSTM_' + str(DROPOUT) + 'do' + '.csv',
+np.savetxt("Results/" + 'GRAZ_CV_' + 'MLP_' + str(DROPOUT) + 'do' + '.csv',
            cv_all_subjects, delimiter=',', fmt='%2.4f')
 print('CV values successfully saved!\n')
 
 # ## Load the trained model
 
 # In[ ]:
+from keras.models import load_model
 
-
-model.save('ModelSave/' + 'LSTMmonitoring.h5')  # creates a HDF5 file 'my_model.h5'
-model2 = load_model('ModelSave/' + 'LSTMmonitoring.h5',
+model.save('ModelSave/' + 'MLPmonitoring.h5')  # creates a HDF5 file 'my_model.h5'
+model2 = load_model('ModelSave/' + 'MLPmonitoring.h5',
                     custom_objects={'Spectrogram': kapre.time_frequency.Spectrogram,
                                     'Normalization2D': kapre.utils.Normalization2D})
-

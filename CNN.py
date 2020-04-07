@@ -1,23 +1,36 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# # Neural Networks Architecture for Decoding EEG MI Data using Spectrogram Representations
-
-# ## Preparation
-#
-# In case that gumpy is not installed as a module, we need to specify the path to ``gumpy``. In addition, we wish to configure jupyter notebooks and any backend properly. Note that it may take some time for ``gumpy`` to load due to the number of dependencies
-
-
 from __future__ import print_function
-import os
+import os;
+
 os.environ["THEANO_FLAGS"] = "device=gpu0"
+import os.path
+from datetime import datetime
 import sys
+
 sys.path.append('./gumpy')
 
 import gumpy
 import numpy as np
+import scipy.io
+import matplotlib.pyplot as plt
+# get_ipython().run_line_magic('matplotlib', 'inline')
+
+
+#
+# To use the models provided by `gumpy-deeplearning`, we have to set the path to the models directory and import it. If you installed `gumpy-deeplearning` as a module, this step may not be required.
+
+# ## Utility functions
+#
+# The examples for ``gumpy-deeplearning`` ship with a few tiny helper functions. For instance, there's one that tells you the versions of the currently installed keras and kapre. ``keras`` is required in ``gumpy-deeplearning``, while ``kapre``
+# can be used to compute spectrograms.
+#
+# In addition, the utility functions contain a method ``load_preprocess_data`` to load and preprocess data. Its usage will be shown further below
+
+# In[2]:
+
 
 import utils
+
+utils.print_version_info()
 
 # ## Setup parameters for the model and data
 # Before we jump into the processing, we first wish to specify some parameters (e.g. frequencies) that we know from the data.
@@ -84,45 +97,76 @@ x_subject = np.rollaxis(x_subject, 2, 1)
 
 
 # from .model import KerasModel
+import keras
 from keras.models import Sequential
+from keras.layers import Dense, Activation, Flatten
+from keras.layers import BatchNormalization, Dropout, Conv2D, MaxPooling2D
 from keras.models import load_model
 import kapre
-
-# # LSTM
-
-from keras.layers import Dense, LSTM as _LSTM
+from kapre.utils import Normalization2D
+from kapre.time_frequency import Spectrogram
 
 
-def LSTM_model(input_shape, num_hidden_neurons=128,
-               num_layers=1, dropout=0.2, recurrent_dropout=0.2,
-               print_summary=False):
+def CNN_model(input_shape, dropout=0.5, print_summary=False):
+    # basis of the CNN_STFT is a Sequential network
     model = Sequential()
-    if num_layers > 1:
-        for i in range(1, num_layers, 1):
-            model.add(_LSTM(num_hidden_neurons, input_shape=input_shape,
-                            return_sequences=True, dropout=dropout, recurrent_dropout=recurrent_dropout))
-        model.add(_LSTM(num_hidden_neurons))
-    else:
-        model.add(_LSTM(num_hidden_neurons, input_shape=input_shape, dropout=dropout,
-                        recurrent_dropout=recurrent_dropout))
-    model.add(Dense(2, activation='softmax'))
+
+    # spectrogram creation using STFT
+    model.add(Spectrogram(n_dft=128, n_hop=16, input_shape=input_shape,
+                          return_decibel_spectrogram=False, power_spectrogram=2.0,
+                          trainable_kernel=False, name='static_stft'))
+    model.add(Normalization2D(str_axis='freq'))
+
+    # Conv Block 1
+    model.add(Conv2D(filters=24, kernel_size=(12, 12),
+                     strides=(1, 1), name='conv1',
+                     border_mode='same'))
+    model.add(BatchNormalization(axis=1))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid',
+                           data_format='channels_last'))
+
+    # Conv Block 2
+    model.add(Conv2D(filters=48, kernel_size=(8, 8),
+                     name='conv2', border_mode='same'))
+    model.add(BatchNormalization(axis=1))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid',
+                           data_format='channels_last'))
+
+    # Conv Block 3
+    model.add(Conv2D(filters=96, kernel_size=(4, 4),
+                     name='conv3', border_mode='same'))
+    model.add(BatchNormalization(axis=1))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2),
+                           padding='valid',
+                           data_format='channels_last'))
+    model.add(Dropout(dropout))
+
+    # classificator
+    model.add(Flatten())
+    model.add(Dense(2))  # two classes only
+    model.add(Activation('softmax'))
 
     if print_summary:
         print(model.summary())
 
-        # compile the model
+    # compile the model
     model.compile(loss='categorical_crossentropy',
                   optimizer='adam',
                   metrics=['accuracy'])
 
-    # assign and return
+    # assign model and return
 
     return model
 
 
+# In[ ]:
+
+
 from sklearn.model_selection import StratifiedKFold
 from keras.callbacks import ModelCheckpoint
-
 # define KFOLD-fold cross validation test harness
 kfold = StratifiedKFold(n_splits=KFOLD, shuffle=True, random_state=SEED)
 cvscores = []
@@ -130,20 +174,21 @@ ii = 1
 for train, test in kfold.split(x_subject, y_subject[:, 0]):
     print('Run ' + str(ii) + '...')
     # create callbacks
-    model_name_str = "ModelSave/" + 'GRAZ_LSTM_' + '_run_' + str(ii)
+    model_name_str = "ModelSave/" + 'GRAZ_CNN_STFT_3layer_' + \
+                     '_run_' + str(ii)
 
     checkpoint = ModelCheckpoint(model_name_str, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
     callbacks_list = [checkpoint]
     # Fit the model
     # initialize and create the model
-    model = LSTM_model(x_subject.shape[1:], dropout=DROPOUT, print_summary=False)
+    model = CNN_model(x_subject.shape[1:], dropout=DROPOUT, print_summary=False)
 
     # fit model. If you specify monitor=True, then the model will create callbacks
     # and write its state to a HDF5 file
     model.fit(x_subject[train], y_subject[train],
               epochs=NumbItr,
               batch_size=256,
-              verbose=1,
+              verbose=0,
               validation_split=0.1, callbacks=callbacks_list)
 
     # evaluate the model
@@ -157,7 +202,7 @@ for train, test in kfold.split(x_subject, y_subject[:, 0]):
 print("%.2f%% (+/- %.2f%%)" % (np.mean(cvscores), np.std(cvscores)))
 cv_all_subjects = np.asarray(cvscores)
 print('Saving CV values to file....')
-np.savetxt("Results/" + 'GRAZ_CV_' + 'LSTM_' + str(DROPOUT) + 'do' + '.csv',
+np.savetxt("Results/" + 'GRAZ_CV_' + 'CNN_STFT_3layer_' + str(DROPOUT) + 'do' + '.csv',
            cv_all_subjects, delimiter=',', fmt='%2.4f')
 print('CV values successfully saved!\n')
 
@@ -166,8 +211,7 @@ print('CV values successfully saved!\n')
 # In[ ]:
 
 
-model.save('ModelSave/' + 'LSTMmonitoring.h5')  # creates a HDF5 file 'my_model.h5'
-model2 = load_model('ModelSave/' + 'LSTMmonitoring.h5',
+model.save('ModelSave/' + 'CNN_STFTmonitoring.h5')  # creates a HDF5 file 'my_model.h5'
+model2 = load_model('ModelSave/' + 'CNN_STFTmonitoring.h5',
                     custom_objects={'Spectrogram': kapre.time_frequency.Spectrogram,
                                     'Normalization2D': kapre.utils.Normalization2D})
-
