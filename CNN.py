@@ -100,7 +100,7 @@ x_subject = np.rollaxis(x_subject, 2, 1)
 import keras
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Flatten
-from keras.layers import BatchNormalization, Dropout, Conv2D, MaxPooling2D
+from keras.layers import BatchNormalization, Dropout, Conv1D, MaxPooling1D
 from keras.models import load_model
 import kapre
 from kapre.utils import Normalization2D
@@ -112,34 +112,33 @@ def CNN_model(input_shape, dropout=0.5, print_summary=False):
     model = Sequential()
 
     # spectrogram creation using STFT
-    model.add(Spectrogram(n_dft=128, n_hop=16, input_shape=input_shape,
-                          return_decibel_spectrogram=False, power_spectrogram=2.0,
-                          trainable_kernel=False, name='static_stft'))
-    model.add(Normalization2D(str_axis='freq'))
+    # model.add(Spectrogram(n_dft=128, n_hop=16, input_shape=input_shape,
+    #                       return_decibel_spectrogram=False, power_spectrogram=2.0,
+    #                       trainable_kernel=False, name='static_stft'))
+    # model.add(Normalization2D(str_axis='freq'))
 
     # Conv Block 1
-    model.add(Conv2D(filters=24, kernel_size=(12, 12),
-                     strides=(1, 1), name='conv1',
+    model.add(Conv1D(filters=24, kernel_size=12, name='conv1',
                      border_mode='same'))
     model.add(BatchNormalization(axis=1))
     model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid',
+    model.add(MaxPooling1D(pool_size=2, padding='valid',
                            data_format='channels_last'))
 
     # Conv Block 2
-    model.add(Conv2D(filters=48, kernel_size=(8, 8),
+    model.add(Conv1D(filters=48, kernel_size=8,
                      name='conv2', border_mode='same'))
     model.add(BatchNormalization(axis=1))
     model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid',
+    model.add(MaxPooling1D(pool_size=2, padding='valid',
                            data_format='channels_last'))
 
     # Conv Block 3
-    model.add(Conv2D(filters=96, kernel_size=(4, 4),
+    model.add(Conv1D(filters=96, kernel_size=4,
                      name='conv3', border_mode='same'))
     model.add(BatchNormalization(axis=1))
     model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2),
+    model.add(MaxPooling1D(pool_size=2,
                            padding='valid',
                            data_format='channels_last'))
     model.add(Dropout(dropout))
@@ -185,7 +184,9 @@ for train, test in kfold.split(x_subject, y_subject[:, 0]):
 
     # fit model. If you specify monitor=True, then the model will create callbacks
     # and write its state to a HDF5 file
-    model.fit(x_subject[train], y_subject[train],
+    num_samples, row_num, col_num = x_subject[train].shape
+    reshaped = np.reshape(x_subject[train], (num_samples, col_num, row_num))
+    model.fit(reshaped, y_subject[train],
               epochs=NumbItr,
               batch_size=256,
               verbose=0,
@@ -193,7 +194,9 @@ for train, test in kfold.split(x_subject, y_subject[:, 0]):
 
     # evaluate the model
     print('Evaluating model on test set...')
-    scores = model.evaluate(x_subject[test], y_subject[test], verbose=0)
+    num_samples, row_num, col_num = x_subject[test].shape
+    test_reshaped = np.reshape(x_subject[test], (num_samples, col_num, row_num))
+    scores = model.evaluate(test_reshaped, y_subject[test], verbose=0)
     print("Result on test set: %s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
     cvscores.append(scores[1] * 100)
     ii += 1
