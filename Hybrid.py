@@ -35,8 +35,6 @@ utils.print_version_info()
 # ## Setup parameters for the model and data
 # Before we jump into the processing, we first wish to specify some parameters (e.g. frequencies) that we know from the data.
 
-# In[3]:
-
 
 DEBUG = True
 CLASS_COUNT = 2
@@ -87,9 +85,12 @@ x_augmented, y_augmented = gumpy.signal.sliding_window(data=x_train[:, :, :],
                                                        window_sz=4 * FS,
                                                        n_hop=FS // 10,
                                                        n_start=FS * 1)
+
+# by doing the sliding window, we get more samples each being 1000 frames long instead of 2000
+
 x_subject = x_augmented
 y_subject = y_augmented
-x_subject = np.rollaxis(x_subject, 2, 1)
+# x_subject = np.rollaxis(x_subject, 2, 1)
 
 # # CNN model
 
@@ -105,9 +106,12 @@ from keras.models import load_model
 import kapre
 from kapre.utils import Normalization2D
 from kapre.time_frequency import Spectrogram
+from keras.layers import LSTM
+from keras.layers import TimeDistributed
 
 
-def CNN_model(input_shape, dropout=0.5, print_summary=False):
+def CNN_model(input_shape, dropout=0.5, print_summary=False, num_hidden_neurons=128,
+              num_layers=1, dropout_lstm=0.2, recurrent_dropout=0.2, ):
     # basis of the CNN_STFT is a Sequential network
     model = Sequential()
 
@@ -118,32 +122,41 @@ def CNN_model(input_shape, dropout=0.5, print_summary=False):
     # model.add(Normalization2D(str_axis='freq'))
 
     # Conv Block 1
-    model.add(Conv1D(filters=96, kernel_size=3, name='conv1.2',
-                     activation='relu'))
-    model.add(BatchNormalization(axis=1))
-    model.add(MaxPooling1D(pool_size=2, padding='valid',
-                           data_format='channels_last'))
+    model.add(TimeDistributed(Conv1D(filters=96, kernel_size=3, name='conv1.2',
+                                     activation='relu'), input_shape=input_shape))
+    model.add(TimeDistributed(BatchNormalization(axis=1)))
+    model.add(TimeDistributed((MaxPooling1D(pool_size=2, padding='valid',
+                                            data_format='channels_last'))))
 
     # Conv Block 2
-    model.add(Conv1D(filters=64, kernel_size=3,
-                     name='conv2', activation='relu'))
-    model.add(BatchNormalization(axis=1))
-    model.add(MaxPooling1D(pool_size=2, padding='valid',
-                           data_format='channels_last'))
+    model.add(TimeDistributed(Conv1D(filters=64, kernel_size=3,
+                                     name='conv2', activation='relu')))
+    model.add(TimeDistributed(BatchNormalization(axis=1)))
+    model.add(TimeDistributed(MaxPooling1D(pool_size=2, padding='valid',
+                                           data_format='channels_last')))
 
     # Conv Block 3
-    model.add(Conv1D(filters=128, kernel_size=3,
-                     name='conv3', activation='relu'))
-    model.add(BatchNormalization(axis=1))
-    model.add(MaxPooling1D(pool_size=2,
-                           padding='valid',
-                           data_format='channels_last'))
-    model.add(Dropout(dropout))
+    model.add(TimeDistributed(Conv1D(filters=128, kernel_size=3,
+                                     name='conv3', activation='relu')))
+    model.add(TimeDistributed(BatchNormalization(axis=1)))
+    model.add(TimeDistributed(MaxPooling1D(pool_size=2,
+                                           padding='valid',
+                                           data_format='channels_last')))
+    model.add(TimeDistributed(Dropout(dropout)))
 
     # classifier
-    model.add(Flatten())
-    model.add(Dense(2))  # two classes only
-    model.add(Activation('softmax'))
+    model.add(TimeDistributed(Flatten()))
+
+    # LSTM STUFF ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    if num_layers > 1:
+        for i in range(1, num_layers, 1):
+            model.add(LSTM(num_hidden_neurons,
+                           return_sequences=True, dropout=dropout, recurrent_dropout=recurrent_dropout))
+        model.add(LSTM(num_hidden_neurons))
+    else:
+        model.add(LSTM(num_hidden_neurons, dropout=dropout,
+                       recurrent_dropout=recurrent_dropout))
+    model.add(Dense(2, activation='softmax'))
 
     if print_summary:
         print(model.summary())
@@ -163,11 +176,14 @@ def CNN_model(input_shape, dropout=0.5, print_summary=False):
 
 from sklearn.model_selection import StratifiedKFold
 from keras.callbacks import ModelCheckpoint
+
 # define KFOLD-fold cross validation test harness
 kfold = StratifiedKFold(n_splits=KFOLD, shuffle=True, random_state=SEED)
 cvscores = []
 ii = 1
 for train, test in kfold.split(x_subject, y_subject[:, 0]):
+    n_frames = 10
+
     print('Run ' + str(ii) + '...')
     # create callbacks
     model_name_str = "ModelSave/" + 'GRAZ_CNN_STFT_3layer_' + \
@@ -181,9 +197,7 @@ for train, test in kfold.split(x_subject, y_subject[:, 0]):
 
     # fit model. If you specify monitor=True, then the model will create callbacks
     # and write its state to a HDF5 file
-    num_samples, row_num, col_num = x_subject[train].shape
-    reshaped = np.reshape(x_subject[train], (num_samples, col_num, row_num))
-    model.fit(reshaped, y_subject[train],
+    model.fit(x_subject[train], y_subject[train],
               epochs=NumbItr,
               batch_size=256,
               verbose=0,
@@ -191,9 +205,7 @@ for train, test in kfold.split(x_subject, y_subject[:, 0]):
 
     # evaluate the model
     print('Evaluating model on test set...')
-    num_samples, row_num, col_num = x_subject[test].shape
-    test_reshaped = np.reshape(x_subject[test], (num_samples, col_num, row_num))
-    scores = model.evaluate(test_reshaped, y_subject[test], verbose=0)
+    scores = model.evaluate(x_subject[test], y_subject[test], verbose=0)
     print("Result on test set: %s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
     cvscores.append(scores[1] * 100)
     ii += 1
