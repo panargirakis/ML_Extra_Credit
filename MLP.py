@@ -81,10 +81,10 @@ def MLP_model(input_shape, dropout=0.5, print_summary=False):
     model = Sequential()
 
     # spectrogram creation using STFT
-    model.add(Spectrogram(n_dft = 128, n_hop = 16, input_shape = input_shape,
-              return_decibel_spectrogram = False, power_spectrogram = 2.0,
-              trainable_kernel = False, name = 'static_stft'))
-    model.add(Normalization2D(str_axis = 'freq'))
+    # model.add(Spectrogram(n_dft = 128, n_hop = 16, input_shape = input_shape,
+    #           return_decibel_spectrogram = False, power_spectrogram = 2.0,
+    #           trainable_kernel = False, name = 'static_stft'))
+    # model.add(Normalization2D(str_axis = 'freq'))
     model.add(Flatten())
     model.add(Dense(neurons_per_layer, activation='relu', input_shape=(784,)))
     model.add(Dropout(0.2))
