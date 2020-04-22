@@ -1,0 +1,90 @@
+MAX_EVALS = 10
+
+space = {'neurons_per_layer': hp.quniform('neurons_per_layer', 10, 500, 10),
+         'n_hidden_layers': hp.choice('n_hidden_layers', [1, 2, 5, 10]),
+         'dropout': hp.uniform('dropout', 0.1, 1.0)
+         }
+
+
+Validation accuracy on run 1/5: 49.23
+Training MLP with 400 h_neurons, 5 h_layers and 0.62 dropout
+Validation accuracy on run 2/5: 49.63
+Training MLP with 400 h_neurons, 5 h_layers and 0.62 dropout
+Validation accuracy on run 3/5: 49.68
+Training MLP with 400 h_neurons, 5 h_layers and 0.62 dropout
+Validation accuracy on run 4/5: 49.68
+Training MLP with 400 h_neurons, 5 h_layers and 0.62 dropout
+Validation accuracy on run 5/5: 49.80
+Training MLP with 350 h_neurons, 10 h_layers and 0.50 dropout
+Validation accuracy on run 1/5: 52.76
+Training MLP with 350 h_neurons, 10 h_layers and 0.50 dropout
+Validation accuracy on run 2/5: 53.06
+Training MLP with 350 h_neurons, 10 h_layers and 0.50 dropout
+Validation accuracy on run 3/5: 54.50
+Training MLP with 350 h_neurons, 10 h_layers and 0.50 dropout
+Validation accuracy on run 4/5: 52.81
+Training MLP with 350 h_neurons, 10 h_layers and 0.50 dropout
+Validation accuracy on run 5/5: 53.98
+Training MLP with 170 h_neurons, 2 h_layers and 0.18 dropout
+Validation accuracy on run 1/5: 56.50
+Training MLP with 170 h_neurons, 2 h_layers and 0.18 dropout
+Validation accuracy on run 2/5: 54.95
+Training MLP with 170 h_neurons, 2 h_layers and 0.18 dropout
+Validation accuracy on run 3/5: 55.70
+Training MLP with 170 h_neurons, 2 h_layers and 0.18 dropout
+Validation accuracy on run 4/5: 56.74
+Training MLP with 170 h_neurons, 2 h_layers and 0.18 dropout
+Validation accuracy on run 5/5: 55.33
+Training MLP with 470 h_neurons, 1 h_layers and 0.33 dropout
+Validation accuracy on run 1/5: 55.95
+Training MLP with 470 h_neurons, 1 h_layers and 0.33 dropout
+Validation accuracy on run 2/5: 56.35
+Training MLP with 470 h_neurons, 1 h_layers and 0.33 dropout
+Validation accuracy on run 3/5: 57.54
+Training MLP with 470 h_neurons, 1 h_layers and 0.33 dropout
+Validation accuracy on run 4/5: 59.23
+Training MLP with 470 h_neurons, 1 h_layers and 0.33 dropout
+Validation accuracy on run 5/5: 57.62
+Training MLP with 20 h_neurons, 2 h_layers and 0.85 dropout
+Validation accuracy on run 1/5: 50.47
+Training MLP with 20 h_neurons, 2 h_layers and 0.85 dropout
+Validation accuracy on run 2/5: 51.17
+Training MLP with 20 h_neurons, 2 h_layers and 0.85 dropout
+Validation accuracy on run 3/5: 50.32
+Training MLP with 20 h_neurons, 2 h_layers and 0.85 dropout
+Validation accuracy on run 4/5: 49.58
+Training MLP with 20 h_neurons, 2 h_layers and 0.85 dropout
+Validation accuracy on run 5/5: 48.56
+Training MLP with 330 h_neurons, 5 h_layers and 0.97 dropout
+Validation accuracy on run 1/5: 49.08
+Training MLP with 330 h_neurons, 5 h_layers and 0.97 dropout
+Validation accuracy on run 2/5: 49.08
+Training MLP with 330 h_neurons, 5 h_layers and 0.97 dropout
+Validation accuracy on run 3/5: 49.08
+Training MLP with 330 h_neurons, 5 h_layers and 0.97 dropout
+Validation accuracy on run 4/5: 49.08
+Training MLP with 330 h_neurons, 5 h_layers and 0.97 dropout
+Validation accuracy on run 5/5: 49.05
+Training MLP with 220 h_neurons, 1 h_layers and 0.46 dropout
+Validation accuracy on run 1/5: 57.39
+Training MLP with 220 h_neurons, 1 h_layers and 0.46 dropout
+Validation accuracy on run 2/5: 56.05
+Training MLP with 220 h_neurons, 1 h_layers and 0.46 dropout
+Validation accuracy on run 3/5: 55.60
+Training MLP with 220 h_neurons, 1 h_layers and 0.46 dropout
+Validation accuracy on run 4/5: 55.80
+Training MLP with 220 h_neurons, 1 h_layers and 0.46 dropout
+Validation accuracy on run 5/5: 55.73
+Training MLP with 150 h_neurons, 2 h_layers and 0.59 dropout
+Validation accuracy on run 1/5: 49.23
+Training MLP with 150 h_neurons, 2 h_layers and 0.59 dropout
+Validation accuracy on run 2/5: 49.08
+Training MLP with 150 h_neurons, 2 h_layers and 0.59 dropout
+Validation accuracy on run 3/5: 48.98
+Training MLP with 150 h_neurons, 2 h_layers and 0.59 dropout
+Validation accuracy on run 4/5: 49.03
+Training MLP with 150 h_neurons, 2 h_layers and 0.59 dropout
+Validation accuracy on run 5/5: 49.10
+100%|██████████| 8/8 [1:03:31<00:00, 476.42s/trial, best loss: 42.6622578784152]
+The results are:
+ {'dropout': 0.3252988467999174, 'n_hidden_layers': 0, 'neurons_per_layer': 470.0}
