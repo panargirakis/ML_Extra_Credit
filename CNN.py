@@ -13,7 +13,7 @@ import numpy as np
 import scipy.io
 import matplotlib.pyplot as plt
 # get_ipython().run_line_magic('matplotlib', 'inline')
-
+from hyperopt import hp, tpe, Trials, fmin, STATUS_OK
 
 #
 # To use the models provided by `gumpy-deeplearning`, we have to set the path to the models directory and import it. If you installed `gumpy-deeplearning` as a module, this step may not be required.
@@ -24,18 +24,12 @@ import matplotlib.pyplot as plt
 # can be used to compute spectrograms.
 #
 # In addition, the utility functions contain a method ``load_preprocess_data`` to load and preprocess data. Its usage will be shown further below
-
-# In[2]:
-
-
 import utils
 
 utils.print_version_info()
 
 # ## Setup parameters for the model and data
 # Before we jump into the processing, we first wish to specify some parameters (e.g. frequencies) that we know from the data.
-
-# In[3]:
 
 
 DEBUG = True
@@ -107,7 +101,7 @@ from kapre.utils import Normalization2D
 from kapre.time_frequency import Spectrogram
 
 
-def CNN_model(input_shape, dropout=0.5, print_summary=False):
+def CNN_model(input_shape, filter1_s=96, filter2_s=64, filter3_s=128, kernel_size=3, dropout=0.5, print_summary=False):
     # basis of the CNN_STFT is a Sequential network
     model = Sequential()
 
@@ -163,55 +157,85 @@ def CNN_model(input_shape, dropout=0.5, print_summary=False):
 
 from sklearn.model_selection import StratifiedKFold
 from keras.callbacks import ModelCheckpoint
-# define KFOLD-fold cross validation test harness
-kfold = StratifiedKFold(n_splits=KFOLD, shuffle=True, random_state=SEED)
-cvscores = []
-ii = 1
-for train, test in kfold.split(x_subject, y_subject[:, 0]):
-    print('Run ' + str(ii) + '...')
-    # create callbacks
-    model_name_str = "ModelSave/" + 'GRAZ_CNN_STFT_3layer_' + \
-                     '_run_' + str(ii)
-
-    checkpoint = ModelCheckpoint(model_name_str, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
-    callbacks_list = [checkpoint]
-    # Fit the model
-    # initialize and create the model
-    model = CNN_model(x_subject.shape[1:], dropout=DROPOUT, print_summary=False)
-
-    # fit model. If you specify monitor=True, then the model will create callbacks
-    # and write its state to a HDF5 file
-    num_samples, row_num, col_num = x_subject[train].shape
-    reshaped = np.reshape(x_subject[train], (num_samples, col_num, row_num))
-    model.fit(reshaped, y_subject[train],
-              epochs=NumbItr,
-              batch_size=256,
-              verbose=0,
-              validation_split=0.1, callbacks=callbacks_list)
-
-    # evaluate the model
-    print('Evaluating model on test set...')
-    num_samples, row_num, col_num = x_subject[test].shape
-    test_reshaped = np.reshape(x_subject[test], (num_samples, col_num, row_num))
-    scores = model.evaluate(test_reshaped, y_subject[test], verbose=0)
-    print("Result on test set: %s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
-    cvscores.append(scores[1] * 100)
-    ii += 1
-
-# print some evaluation statistics and write results to file
-print("%.2f%% (+/- %.2f%%)" % (np.mean(cvscores), np.std(cvscores)))
-cv_all_subjects = np.asarray(cvscores)
-print('Saving CV values to file....')
-np.savetxt("Results/" + 'GRAZ_CV_' + 'CNN_STFT_3layer_' + str(DROPOUT) + 'do' + '.csv',
-           cv_all_subjects, delimiter=',', fmt='%2.4f')
-print('CV values successfully saved!\n')
-
-# ## Load the trained model
-
-# In[ ]:
 
 
-model.save('ModelSave/' + 'CNN_STFTmonitoring.h5')  # creates a HDF5 file 'my_model.h5'
-model2 = load_model('ModelSave/' + 'CNN_STFTmonitoring.h5',
-                    custom_objects={'Spectrogram': kapre.time_frequency.Spectrogram,
-                                    'Normalization2D': kapre.utils.Normalization2D})
+def objective(params):
+    filter1_s, filter2_s, filter3_s, kernel_size = int(params['filter1_s']), int(params['filter2_s']), \
+                                                   int(params['filter3_s']), int(params['kernel_size'])
+
+    print(
+        "Training CNN with {} filters in block 1, {} filters in block 2, {} filters in block 3 and kernel sizes of {}".format(
+            filter1_s, filter2_s, filter3_s, kernel_size))
+
+    # define KFOLD-fold cross validation test harness
+    kfold = StratifiedKFold(n_splits=KFOLD, shuffle=True, random_state=SEED)
+    cvscores = []
+    test_set_acc = 0
+    ii = 1
+    for train, test in kfold.split(x_subject, y_subject[:, 0]):
+        # create callbacks
+        model_name_str = "ModelSave/" + 'GRAZ_CNN_STFT_3layer_' + \
+                         '_run_' + str(ii)
+
+        # checkpoint = ModelCheckpoint(model_name_str, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+        # callbacks_list = [checkpoint]
+        # Fit the model
+        # initialize and create the model
+        model = CNN_model(x_subject.shape[1:], filter1_s, filter2_s, filter3_s, kernel_size, dropout=DROPOUT,
+                          print_summary=False)
+
+        # fit model. If you specify monitor=True, then the model will create callbacks
+        # and write its state to a HDF5 file
+        num_samples, row_num, col_num = x_subject[train].shape
+        reshaped = np.reshape(x_subject[train], (num_samples, col_num, row_num))
+        model.fit(reshaped, y_subject[train],
+                  epochs=NumbItr,
+                  batch_size=256,
+                  verbose=0,
+                  validation_split=0.1)
+
+        # evaluate the model
+        num_samples, row_num, col_num = x_subject[test].shape
+        test_reshaped = np.reshape(x_subject[test], (num_samples, col_num, row_num))
+        val_acc = model.evaluate(test_reshaped, y_subject[test], verbose=0)[1]
+        print("Validation accuracy on run {}/{}: {:.2f}".format(ii, KFOLD, val_acc * 100))
+        cvscores.append(val_acc * 100)
+        ii += 1
+
+    # print some evaluation statistics and write results to file
+    # print("%.2f%% (+/- %.2f%%)" % (np.mean(cvscores), np.std(cvscores)))
+    # cv_all_subjects = np.asarray(cvscores)
+    # print('Saving CV values to file....')
+    # np.savetxt("Results/" + 'GRAZ_CV_' + 'CNN_STFT_3layer_' + str(DROPOUT) + 'do' + '.csv',
+    #            cv_all_subjects, delimiter=',', fmt='%2.4f')
+    # print('CV values successfully saved!\n')
+    return {'loss': 100.0 - np.mean(cvscores), 'filter1_s': filter1_s,
+            'filter2_s': filter2_s, 'filter3_s': filter3_s, 'kernel_size': kernel_size, 'status': STATUS_OK,
+            'avg_validation_acc': np.mean(cvscores)}
+
+
+space = {'filter1_s': hp.quniform('filter1_s', 30, 150, 10),
+         'filter2_s': hp.quniform('filter2_s', 30, 150, 10),
+         'filter3_s': hp.quniform('filter3_s', 30, 150, 10),
+         'kernel_size': hp.quniform('kernel_size', 3, 6, 1)
+         }
+
+bayes_trials = Trials()
+
+MAX_EVALS = 8
+
+# Optimize
+# best = fmin(fn=objective, space=space, algo=tpe.suggest,
+#             max_evals=MAX_EVALS, trials=bayes_trials)
+#
+# print("The results are:\n", best)
+
+best = {'filter1_s': 50.0, 'filter2_s': 90.0, 'filter3_s': 140.0, 'kernel_size': 4.0}
+
+res = objective(best)
+print("Average validation accuracy: {}".format(res['avg_validation_acc']))
+
+# model.save('ModelSave/' + 'CNN_STFTmonitoring.h5')  # creates a HDF5 file 'my_model.h5'
+# model2 = load_model('ModelSave/' + 'CNN_STFTmonitoring.h5',
+#                     custom_objects={'Spectrogram': kapre.time_frequency.Spectrogram,
+#                                     'Normalization2D': kapre.utils.Normalization2D})

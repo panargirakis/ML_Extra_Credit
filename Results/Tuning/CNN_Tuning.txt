@@ -1,0 +1,62 @@
+Training CNN with 140 filters in block 1, 40 filters in block 2, 120 filters in block 3 and kernel sizes of 3
+  0%|          | 0/8 [00:00<?, ?trial/s, best loss=?]
+2020-04-23 13:30:56.502856: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2
+Validation accuracy on run 1/5: 74.76
+Validation accuracy on run 2/5: 73.22
+Validation accuracy on run 3/5: 76.61
+Validation accuracy on run 4/5: 72.03
+Validation accuracy on run 5/5: 73.31
+Training CNN with 100 filters in block 1, 140 filters in block 2, 70 filters in block 3 and kernel sizes of 5
+Validation accuracy on run 1/5: 72.97
+Validation accuracy on run 2/5: 73.72
+Validation accuracy on run 3/5: 73.87
+Validation accuracy on run 4/5: 74.07
+Validation accuracy on run 5/5: 74.55
+Training CNN with 60 filters in block 1, 140 filters in block 2, 150 filters in block 3 and kernel sizes of 5
+Validation accuracy on run 1/5: 73.52
+Validation accuracy on run 2/5: 74.51
+Validation accuracy on run 3/5: 74.51
+Validation accuracy on run 4/5: 74.86
+Validation accuracy on run 5/5: 72.76
+Training CNN with 40 filters in block 1, 110 filters in block 2, 40 filters in block 3 and kernel sizes of 6
+Validation accuracy on run 1/5: 73.02
+Validation accuracy on run 2/5: 75.31
+Validation accuracy on run 3/5: 75.96
+Validation accuracy on run 4/5: 73.02
+Validation accuracy on run 5/5: 74.65
+Training CNN with 140 filters in block 1, 110 filters in block 2, 120 filters in block 3 and kernel sizes of 5
+Validation accuracy on run 1/5: 74.81
+Validation accuracy on run 2/5: 72.97
+Validation accuracy on run 3/5: 74.56
+Validation accuracy on run 4/5: 75.11
+Validation accuracy on run 5/5: 71.51
+Training CNN with 100 filters in block 1, 130 filters in block 2, 50 filters in block 3 and kernel sizes of 5
+Validation accuracy on run 1/5: 75.26
+Validation accuracy on run 2/5: 73.32
+Validation accuracy on run 3/5: 75.96
+Validation accuracy on run 4/5: 75.36
+Validation accuracy on run 5/5: 73.06
+Training CNN with 140 filters in block 1, 90 filters in block 2, 120 filters in block 3 and kernel sizes of 5
+Validation accuracy on run 1/5: 74.42
+Validation accuracy on run 2/5: 75.46
+Validation accuracy on run 3/5: 76.31
+Validation accuracy on run 4/5: 73.47
+Validation accuracy on run 5/5: 72.76
+Training CNN with 50 filters in block 1, 90 filters in block 2, 140 filters in block 3 and kernel sizes of 4
+Validation accuracy on run 1/5: 75.41
+Validation accuracy on run 2/5: 75.41
+Validation accuracy on run 3/5: 74.66
+Validation accuracy on run 4/5: 74.46
+Validation accuracy on run 5/5: 75.40
+100%|██████████| 8/8 [4:09:28<00:00, 1871.00s/trial, best loss: 24.930273936188826]
+The results are:
+ {'filter1_s': 50.0, 'filter2_s': 90.0, 'filter3_s': 140.0, 'kernel_size': 4.0}
+Training CNN with 50 filters in block 1, 90 filters in block 2, 140 filters in block 3 and kernel sizes of 4
+Validation accuracy on run 1/5: 72.18
+Validation accuracy on run 2/5: 73.67
+Validation accuracy on run 3/5: 74.32
+Validation accuracy on run 4/5: 73.12
+Validation accuracy on run 5/5: 75.25
+Average validation accuracy: 73.70584859454034
+
+Process finished with exit code 0

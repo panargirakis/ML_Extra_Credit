@@ -132,9 +132,10 @@ def objective(params):
 
         # fit model. If you specify monitor=True, then the model will create callbacks
         # and write its state to a HDF5 file
-        NumbItr = int(neurons_per_layer * (n_hidden_layers + 1) / 20)
+        # NumbItr = int(neurons_per_layer * (n_hidden_layers + 1) / 20)
+        NumbItr = 10
 
-        result = model.fit(x_subject[train], y_subject[train],
+        model.fit(x_subject[train], y_subject[train],
                   epochs=NumbItr,
                   batch_size=256,
                   verbose=0,
@@ -142,9 +143,9 @@ def objective(params):
 
         # evaluate the model
         # print('Evaluating model on test set...')
-        test_set_acc = model.evaluate(x_subject[test], y_subject[test], verbose=0)[1]
-        print("Validation accuracy on run {}/{}: {:.2f}".format(ii, KFOLD, result.history['val_acc'][-1] * 100))
-        cvscores.append(result.history['val_acc'][-1] * 100)
+        val_acc = model.evaluate(x_subject[test], y_subject[test], verbose=0)[1]
+        print("Validation accuracy on run {}/{}: {:.2f}".format(ii, KFOLD, val_acc * 100))
+        cvscores.append(val_acc * 100)
         ii += 1
 
     # print some evaluation statistics and write results to file
@@ -156,7 +157,7 @@ def objective(params):
     # print('CV values successfully saved!\n')
     return {'loss': 100.0 - np.mean(cvscores), 'n_hidden_neurons': neurons_per_layer,
             'n_hidden_layers': n_hidden_layers, 'dropout': dropout, 'status': STATUS_OK,
-            'test_set_acc': test_set_acc}
+            'avg_validation_acc': np.mean(cvscores)}
 
 
 # neurons_per_layer, n_hidden_layers, dropout
@@ -177,10 +178,10 @@ MAX_EVALS = 8
 #
 # print("The results are:\n", best)
 
-best = {'dropout': 0.3252988467999174, 'n_hidden_layers': 1, 'neurons_per_layer': 470.0}
+best = {'dropout': 0.3252988467999174, 'n_hidden_layers': 1, 'neurons_per_layer': 100.0}
 
 res = objective(best)
-print("Test set accuracy: {}".format(res['test_set_acc']))
+print("Average validation accuracy: {}".format(res['avg_validation_acc']))
 
 # # ## Load/save the trained model the trained model
 # from keras.models import load_model

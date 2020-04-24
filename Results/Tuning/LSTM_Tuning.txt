@@ -1,0 +1,57 @@
+Validation accuracy on run 1/5: 56.30
+Validation accuracy on run 2/5: 55.05
+Validation accuracy on run 3/5: 54.16
+Validation accuracy on run 4/5: 56.55
+Validation accuracy on run 5/5: 56.42
+Training LSTM with 370 h_neurons, 5 h_layers and 0.31 recurrent dropout
+Validation accuracy on run 1/5: 51.22
+Validation accuracy on run 2/5: 52.02
+Validation accuracy on run 3/5: 51.82
+Validation accuracy on run 4/5: 53.96
+Validation accuracy on run 5/5: 52.19
+Training LSTM with 290 h_neurons, 2 h_layers and 0.79 recurrent dropout
+Validation accuracy on run 1/5: 54.90
+Validation accuracy on run 2/5: 55.10
+Validation accuracy on run 3/5: 54.65
+Validation accuracy on run 4/5: 53.96
+Validation accuracy on run 5/5: 54.48
+Training LSTM with 290 h_neurons, 5 h_layers and 0.49 recurrent dropout
+Validation accuracy on run 1/5: 50.77
+Validation accuracy on run 2/5: 52.17
+Validation accuracy on run 3/5: 51.57
+Validation accuracy on run 4/5: 53.81
+Validation accuracy on run 5/5: 51.29
+Training LSTM with 140 h_neurons, 1 h_layers and 0.57 recurrent dropout
+Validation accuracy on run 1/5: 58.04
+Validation accuracy on run 2/5: 55.85
+Validation accuracy on run 3/5: 56.25
+Validation accuracy on run 4/5: 57.84
+Validation accuracy on run 5/5: 56.32
+Training LSTM with 310 h_neurons, 5 h_layers and 0.83 recurrent dropout
+Validation accuracy on run 1/5: 49.08
+Validation accuracy on run 2/5: 49.08
+Validation accuracy on run 3/5: 49.08
+Validation accuracy on run 4/5: 49.08
+Validation accuracy on run 5/5: 49.05
+Training LSTM with 300 h_neurons, 5 h_layers and 0.85 recurrent dropout
+Validation accuracy on run 1/5: 49.08
+Validation accuracy on run 2/5: 49.08
+Validation accuracy on run 3/5: 49.08
+Validation accuracy on run 4/5: 49.08
+Validation accuracy on run 5/5: 49.05
+Training LSTM with 40 h_neurons, 2 h_layers and 0.74 recurrent dropout
+Validation accuracy on run 1/5: 51.52
+Validation accuracy on run 2/5: 52.12
+Validation accuracy on run 3/5: 50.77
+Validation accuracy on run 4/5: 51.17
+Validation accuracy on run 5/5: 50.75
+100%|██████████| 8/8 [2:03:02<00:00, 922.84s/trial, best loss: 43.140236465785634]
+The results are:
+ {'dropout': 0.5650525229186382, 'n_hidden_layers': 0, 'neurons_per_layer': 140.0}
+Training LSTM with 140 h_neurons, 0 h_layers and 0.57 recurrent dropout
+Validation accuracy on run 1/5: 58.24
+Validation accuracy on run 2/5: 57.29
+Validation accuracy on run 3/5: 56.00
+Validation accuracy on run 4/5: 57.89
+Validation accuracy on run 5/5: 55.83
+Average validation accuracy: 57.04886279153038
