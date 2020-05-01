@@ -8,9 +8,14 @@ import gumpy
 import numpy as np
 import utils
 from hyperopt import hp, tpe, Trials, fmin, STATUS_OK
+import plotly.express as px
+import pandas as pd
+from scipy import signal
+from scipy.fftpack import fftshift
+import matplotlib.pyplot as plt
+import plotly.graph_objs as go
+import plotly.offline as pt
 
-# ## Setup parameters for the model and data
-# Before we jump into the processing, we first wish to specify some parameters (e.g. frequencies) that we know from the data.
 
 DEBUG = True
 CLASS_COUNT = 2
@@ -53,6 +58,22 @@ x_augmented, y_augmented = gumpy.signal.sliding_window(data=x_train[:, :, :],
                                                        window_sz=4 * FS,
                                                        n_hop=FS // 10,
                                                        n_start=FS * 1)
+vis_x = np.rollaxis(x_train, 2, 1)  # make sure it is "run", "sensor" "sample"
+df = pd.DataFrame({"signal": vis_x[0][0]})
+df["second"] = df['signal'].index / (2000/8)
+fig = px.line(df, x="second", y="signal", title="Raw signal of 1 recording")
+# fig.show()
+
+# issue: to go down to 1Hz, a window of 1250 is needed
+# window size = 5 * sampling rage / lowest freq (156 for down to 8 hz, start of alpha waves)
+freqs, bins, Pxx = signal.spectrogram(df["signal"], FS, nperseg=125)
+plt.pcolormesh(bins, freqs, Pxx)
+plt.ylim(top=100)
+plt.yticks(np.arange(0, 100, step=5))
+plt.ylabel('Frequency [Hz]')
+plt.xlabel('Time [sec]')
+plt.savefig("Results/spectrogram.png")
+
 
 print("Filtered data shape: {}".format(x_train.shape))
 print("Augmented data shape: {}".format(x_augmented.shape))
