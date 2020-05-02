@@ -99,6 +99,7 @@ from keras.models import load_model
 import kapre
 from kapre.utils import Normalization2D
 from kapre.time_frequency import Spectrogram
+from sklearn.metrics import confusion_matrix
 
 
 def CNN_model(input_shape, filter1_s=96, filter2_s=64, filter3_s=128, kernel_size=3, dropout=0.5, print_summary=False):
@@ -170,6 +171,8 @@ def objective(params):
     # define KFOLD-fold cross validation test harness
     kfold = StratifiedKFold(n_splits=KFOLD, shuffle=True, random_state=SEED)
     cvscores = []
+    conf_matrix_training = None
+    conf_matrix_testing = None
     test_set_acc = 0
     ii = 1
     for train, test in kfold.split(x_subject, y_subject[:, 0]):
@@ -200,6 +203,8 @@ def objective(params):
         val_acc = model.evaluate(test_reshaped, y_subject[test], verbose=0)[1]
         print("Validation accuracy on run {}/{}: {:.2f}".format(ii, KFOLD, val_acc * 100))
         cvscores.append(val_acc * 100)
+        conf_matrix_testing = confusion_matrix(np.array(y_subject[test]).argmax(axis=-1), model.predict(test_reshaped).argmax(axis=-1))
+        conf_matrix_training = confusion_matrix(np.array(y_subject[train]).argmax(axis=-1), model.predict(reshaped).argmax(axis=-1))
         ii += 1
 
     # print some evaluation statistics and write results to file
@@ -211,7 +216,8 @@ def objective(params):
     # print('CV values successfully saved!\n')
     return {'loss': 100.0 - np.mean(cvscores), 'filter1_s': filter1_s,
             'filter2_s': filter2_s, 'filter3_s': filter3_s, 'kernel_size': kernel_size, 'status': STATUS_OK,
-            'avg_validation_acc': np.mean(cvscores)}
+            'avg_validation_acc': np.mean(cvscores), 'conf_matrix_training': conf_matrix_training,
+            "conf_matrix_testing": conf_matrix_testing}
 
 
 space = {'filter1_s': hp.quniform('filter1_s', 30, 150, 10),
@@ -234,6 +240,10 @@ best = {'filter1_s': 50.0, 'filter2_s': 90.0, 'filter3_s': 140.0, 'kernel_size':
 
 res = objective(best)
 print("Average validation accuracy: {}".format(res['avg_validation_acc']))
+print("Confusion matrix of last fold (training):")
+print(res["conf_matrix_training"])
+print("Confusion matrix of last fold (testing):")
+print(res["conf_matrix_testing"])
 
 # model.save('ModelSave/' + 'CNN_STFTmonitoring.h5')  # creates a HDF5 file 'my_model.h5'
 # model2 = load_model('ModelSave/' + 'CNN_STFTmonitoring.h5',

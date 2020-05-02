@@ -60,3 +60,13 @@ Validation accuracy on run 5/5: 75.25
 Average validation accuracy: 73.70584859454034
 
 Process finished with exit code 0
+
+Rerun with best params for conf. matrix:
+
+Average validation accuracy: 73.69576449122681
+Confusion matrix of last fold (training):
+[[3868   76]
+ [ 194 3898]]
+Confusion matrix of last fold (testing):
+[[672 313]
+ [210 813]]

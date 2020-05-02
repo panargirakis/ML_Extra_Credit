@@ -129,6 +129,7 @@ def CNN_model(input_shape, dropout=0.5, print_summary=False, num_hidden_neurons=
                                             data_format='channels_last'))))
 
     # Conv Block 2
+
     model.add(TimeDistributed(Conv1D(filters=64, kernel_size=3,
                                      name='conv2', activation='relu')))
     model.add(TimeDistributed(BatchNormalization(axis=1)))

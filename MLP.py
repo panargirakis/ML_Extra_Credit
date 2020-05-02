@@ -17,6 +17,7 @@ import utils
 from sklearn.model_selection import StratifiedKFold
 from keras.callbacks import ModelCheckpoint, Callback
 from hyperopt import hp, tpe, Trials, fmin, STATUS_OK
+from sklearn.metrics import confusion_matrix
 
 # ## Setup parameters for the model and data
 # Before we jump into the processing, we first wish to specify some parameters (e.g. frequencies) that we know from the data.
@@ -118,6 +119,8 @@ def objective(params):
     cvscores = []
     test_set_acc = 0
     ii = 1
+    conf_matrix_training = None
+    conf_matrix_testing = None
     for train, test in kfold.split(x_subject, y_subject[:, 0]):
 
         # create callbacks
@@ -146,6 +149,10 @@ def objective(params):
         val_acc = model.evaluate(x_subject[test], y_subject[test], verbose=0)[1]
         print("Validation accuracy on run {}/{}: {:.2f}".format(ii, KFOLD, val_acc * 100))
         cvscores.append(val_acc * 100)
+        conf_matrix_testing = confusion_matrix(np.array(y_subject[test]).argmax(axis=-1),
+                                               model.predict(x_subject[test]).argmax(axis=-1))
+        conf_matrix_training = confusion_matrix(np.array(y_subject[train]).argmax(axis=-1),
+                                                model.predict(x_subject[train]).argmax(axis=-1))
         ii += 1
 
     # print some evaluation statistics and write results to file
@@ -157,7 +164,8 @@ def objective(params):
     # print('CV values successfully saved!\n')
     return {'loss': 100.0 - np.mean(cvscores), 'n_hidden_neurons': neurons_per_layer,
             'n_hidden_layers': n_hidden_layers, 'dropout': dropout, 'status': STATUS_OK,
-            'avg_validation_acc': np.mean(cvscores)}
+            'avg_validation_acc': np.mean(cvscores), 'conf_matrix_training': conf_matrix_training,
+            "conf_matrix_testing": conf_matrix_testing}
 
 
 # neurons_per_layer, n_hidden_layers, dropout
@@ -182,6 +190,10 @@ best = {'dropout': 0.3252988467999174, 'n_hidden_layers': 1, 'neurons_per_layer'
 
 res = objective(best)
 print("Average validation accuracy: {}".format(res['avg_validation_acc']))
+print("Confusion matrix of last fold (training):")
+print(res["conf_matrix_training"])
+print("Confusion matrix of last fold (testing):")
+print(res["conf_matrix_testing"])
 
 # # ## Load/save the trained model the trained model
 # from keras.models import load_model

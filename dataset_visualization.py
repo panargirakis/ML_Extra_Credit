@@ -48,7 +48,8 @@ grazb_data = gumpy.data.GrazB(data_dir, subject)
 # now that the dataset is setup, we can load the data. This will be handled from within the utils function,
 # which will first load the data and subsequently filter it using a notch and a bandpass filter.
 # the utility function will then return the training data.
-x_train, y_train = utils.load_preprocess_data(grazb_data, True, LOWCUT, HIGHCUT, W0, Q, ANTI_DRIFT, CLASS_COUNT, CUTOFF,
+x_train, y_train = utils.load_preprocess_data(grazb_data, True, LOWCUT,
+                                              HIGHCUT, W0, Q, ANTI_DRIFT, CLASS_COUNT, CUTOFF,
                                               AXIS, FS)
 
 # ## Augment data
@@ -67,7 +68,7 @@ fig = px.line(df, x="second", y="signal", title="Raw signal of 1 recording")
 # issue: to go down to 1Hz, a window of 1250 is needed
 # window size = 5 * sampling rage / lowest freq (156 for down to 8 hz, start of alpha waves)
 freqs, bins, Pxx = signal.spectrogram(df["signal"], FS, nperseg=125)
-plt.pcolormesh(bins, freqs, Pxx)
+plt.pcolormesh(bins, freqs, Pxx)  # show in log scale (do average first then log)
 plt.ylim(top=100)
 plt.yticks(np.arange(0, 100, step=5))
 plt.ylabel('Frequency [Hz]')

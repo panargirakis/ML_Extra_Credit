@@ -55,3 +55,11 @@ Validation accuracy on run 3/5: 56.00
 Validation accuracy on run 4/5: 57.89
 Validation accuracy on run 5/5: 55.83
 Average validation accuracy: 57.04886279153038
+
+
+Confusion matrix of last fold (training):
+[[3937    7]
+ [ 482 3610]]
+Confusion matrix of last fold (testing):
+[[646 339]
+ [466 557]]
