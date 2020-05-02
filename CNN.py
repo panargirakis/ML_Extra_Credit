@@ -113,21 +113,21 @@ def CNN_model(input_shape, filter1_s=96, filter2_s=64, filter3_s=128, kernel_siz
     # model.add(Normalization2D(str_axis='freq'))
 
     # Conv Block 1
-    model.add(Conv1D(filters=96, kernel_size=3, name='conv1.2',
+    model.add(Conv1D(filters=filter1_s, kernel_size=kernel_size, name='conv1.2',
                      activation='relu'))
     model.add(BatchNormalization(axis=1))
     model.add(MaxPooling1D(pool_size=2, padding='valid',
                            data_format='channels_last'))
 
     # Conv Block 2
-    model.add(Conv1D(filters=64, kernel_size=3,
+    model.add(Conv1D(filters=filter2_s, kernel_size=kernel_size,
                      name='conv2', activation='relu'))
     model.add(BatchNormalization(axis=1))
     model.add(MaxPooling1D(pool_size=2, padding='valid',
                            data_format='channels_last'))
 
     # Conv Block 3
-    model.add(Conv1D(filters=128, kernel_size=3,
+    model.add(Conv1D(filters=filter3_s, kernel_size=kernel_size,
                      name='conv3', activation='relu'))
     model.add(BatchNormalization(axis=1))
     model.add(MaxPooling1D(pool_size=2,
