@@ -1,0 +1,76 @@
+2020/5/3
+Keras version: 2.2.4
+Keras backend: tensorflow: 1.13.1
+Keras image dim ordering: tf
+Kapre version: 0.1.4
+Band-pass filtering the data in frequency range from 2.0 Hz to 60.0 Hz...
+Data loaded and processed successfully!
+Training CNN with 90 filters in block 1, 140 filters in block 2, 140 filters in block 3 and kernel sizes of 3
+  0%|          | 0/8 [00:00<?, ?trial/s, best loss=?]
+Validation accuracy on run 1/5: 76.36
+Validation accuracy on run 2/5: 76.75
+Validation accuracy on run 3/5: 74.81
+Validation accuracy on run 4/5: 71.83
+Validation accuracy on run 5/5: 76.00
+Training CNN with 90 filters in block 1, 40 filters in block 2, 60 filters in block 3 and kernel sizes of 6
+Validation accuracy on run 1/5: 82.13
+Validation accuracy on run 2/5: 84.57
+Validation accuracy on run 3/5: 80.99
+Validation accuracy on run 4/5: 82.93
+Validation accuracy on run 5/5: 83.02
+Training CNN with 70 filters in block 1, 150 filters in block 2, 30 filters in block 3 and kernel sizes of 5
+Validation accuracy on run 1/5: 83.28
+Validation accuracy on run 2/5: 84.02
+Validation accuracy on run 3/5: 69.59
+Validation accuracy on run 4/5: 85.86
+Validation accuracy on run 5/5: 84.31
+Training CNN with 80 filters in block 1, 60 filters in block 2, 40 filters in block 3 and kernel sizes of 3
+Validation accuracy on run 1/5: 74.71
+Validation accuracy on run 2/5: 73.42
+Validation accuracy on run 3/5: 75.56
+Validation accuracy on run 4/5: 75.96
+Validation accuracy on run 5/5: 76.29
+Training CNN with 30 filters in block 1, 60 filters in block 2, 80 filters in block 3 and kernel sizes of 4
+Validation accuracy on run 1/5: 76.61
+Validation accuracy on run 2/5: 76.70
+Validation accuracy on run 3/5: 78.40
+Validation accuracy on run 4/5: 77.40
+Validation accuracy on run 5/5: 74.65
+Training CNN with 90 filters in block 1, 50 filters in block 2, 60 filters in block 3 and kernel sizes of 4
+Validation accuracy on run 1/5: 76.90
+Validation accuracy on run 2/5: 76.90
+Validation accuracy on run 3/5: 79.04
+Validation accuracy on run 4/5: 78.80
+Validation accuracy on run 5/5: 74.75
+Training CNN with 30 filters in block 1, 130 filters in block 2, 100 filters in block 3 and kernel sizes of 4
+ 75%|███████▌  | 6/8 [2:34:23<52:18, 1569.25s/trial, best loss: 17.273965347609874]
+
+
+
+Validation accuracy on run 1/5: 76.75
+Validation accuracy on run 2/5: 80.34
+Validation accuracy on run 3/5: 77.95
+Validation accuracy on run 4/5: 78.05
+Validation accuracy on run 5/5: 79.13
+Training CNN with 50 filters in block 1, 80 filters in block 2, 100 filters in block 3 and kernel sizes of 5
+Validation accuracy on run 1/5: 80.84
+Validation accuracy on run 2/5: 78.99
+Validation accuracy on run 3/5: 81.63
+Validation accuracy on run 4/5: 83.18
+Validation accuracy on run 5/5: 81.37
+100%|██████████| 8/8 [11:03:06<00:00, 4973.28s/trial, best loss: 17.273965347609874]
+The results are:
+ {'filter1_s': 90.0, 'filter2_s': 40.0, 'filter3_s': 60.0, 'kernel_size': 6.0}
+Training CNN with 90 filters in block 1, 40 filters in block 2, 60 filters in block 3 and kernel sizes of 6
+Validation accuracy on run 1/5: 83.08
+Validation accuracy on run 2/5: 81.58
+Validation accuracy on run 3/5: 85.27
+Validation accuracy on run 4/5: 82.88
+Validation accuracy on run 5/5: 80.83
+Average validation accuracy: 82.72581650399779
+Confusion matrix of last fold (training):
+[[3682  262]
+ [ 167 3925]]
+Confusion matrix of last fold (testing):
+[[732 253]
+ [132 891]]

@@ -125,3 +125,51 @@ Result on test set: acc: 81.08%
 87.53% (+/- 5.07%)
 Saving CV values to file....
 CV values successfully saved!
+
+NEW RUN FOR CONFUSION MATRIX
+
+Evaluating model on test set...
+Result on test set: acc: 71.58%
+Confusion matrix of last fold (training):
+[[1783 2160]
+ [ 217 3875]]
+Confusion matrix of last fold (testing):
+[[494 492]
+ [ 79 944]]
+Run 2...
+Evaluating model on test set...
+Result on test set: acc: 80.59%
+Confusion matrix of last fold (training):
+[[3411  532]
+ [ 815 3277]]
+Confusion matrix of last fold (testing):
+[[887  99]
+ [291 732]]
+Run 3...
+Evaluating model on test set...
+Result on test set: acc: 88.45%
+Confusion matrix of last fold (training):
+[[3666  277]
+ [ 557 3535]]
+Confusion matrix of last fold (testing):
+[[952  34]
+ [198 825]]
+Run 4...
+Evaluating model on test set...
+Result on test set: acc: 80.09%
+Confusion matrix of last fold (training):
+[[3492  451]
+ [1029 3063]]
+Confusion matrix of last fold (testing):
+[[920  66]
+ [334 689]]
+Run 5...
+Evaluating model on test set...
+Result on test set: acc: 81.18%
+Confusion matrix of last fold (training):
+[[3628  316]
+ [ 922 3170]]
+Confusion matrix of last fold (testing):
+[[927  58]
+ [320 703]]
+80.38% (+/- 5.36%)

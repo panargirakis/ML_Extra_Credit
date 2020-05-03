@@ -2,32 +2,28 @@
 # coding: utf-8
 
 # # Neural Networks Architecture for Decoding EEG MI Data using Spectrogram Representations
-
-# ## Preparation
-#
 # In case that gumpy is not installed as a module, we need to specify the path to ``gumpy``. In addition, we wish to configure jupyter notebooks and any backend properly. Note that it may take some time for ``gumpy`` to load due to the number of dependencies
 
 
 from __future__ import print_function
 import os
+
 os.environ["THEANO_FLAGS"] = "device=gpu0"
 import sys
+
 sys.path.append('./gumpy')
 
 import gumpy
 import numpy as np
-
 import utils
+from hyperopt import hp, tpe, Trials, fmin, STATUS_OK
+from sklearn.metrics import confusion_matrix
 
 # ## Setup parameters for the model and data
 # Before we jump into the processing, we first wish to specify some parameters (e.g. frequencies) that we know from the data.
 
-# In[3]:
-
-
 DEBUG = True
 CLASS_COUNT = 2
-DROPOUT = 0.2  # dropout rate in float
 
 # parameters for filtering data
 FS = 250
@@ -42,7 +38,6 @@ AXIS = 0
 # set random seed
 SEED = 42
 KFOLD = 5
-NumbItr = 10
 
 # ## Load raw data
 #
@@ -66,9 +61,6 @@ x_train, y_train = utils.load_preprocess_data(grazb_data, True, LOWCUT, HIGHCUT,
 
 # ## Augment data
 
-# In[5]:
-
-
 x_augmented, y_augmented = gumpy.signal.sliding_window(data=x_train[:, :, :],
                                                        labels=y_train[:, :],
                                                        window_sz=4 * FS,
@@ -77,11 +69,6 @@ x_augmented, y_augmented = gumpy.signal.sliding_window(data=x_train[:, :, :],
 x_subject = x_augmented
 y_subject = y_augmented
 x_subject = np.rollaxis(x_subject, 2, 1)
-
-# # CNN model
-
-# In[6]:
-
 
 # from .model import KerasModel
 from keras.models import Sequential
@@ -123,51 +110,91 @@ def LSTM_model(input_shape, num_hidden_neurons=128,
 from sklearn.model_selection import StratifiedKFold
 from keras.callbacks import ModelCheckpoint
 
-# define KFOLD-fold cross validation test harness
-kfold = StratifiedKFold(n_splits=KFOLD, shuffle=True, random_state=SEED)
-cvscores = []
-ii = 1
-for train, test in kfold.split(x_subject, y_subject[:, 0]):
-    print('Run ' + str(ii) + '...')
-    # create callbacks
-    model_name_str = "ModelSave/" + 'GRAZ_LSTM_' + '_run_' + str(ii)
 
-    checkpoint = ModelCheckpoint(model_name_str, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
-    callbacks_list = [checkpoint]
-    # Fit the model
-    # initialize and create the model
-    model = LSTM_model(x_subject.shape[1:], dropout=DROPOUT, print_summary=False)
+def objective(params):
+    neurons_per_layer, n_hidden_layers, dropout = int(params["neurons_per_layer"]), int(params["n_hidden_layers"]), \
+                                                  params["dropout"]
 
-    # fit model. If you specify monitor=True, then the model will create callbacks
-    # and write its state to a HDF5 file
-    model.fit(x_subject[train], y_subject[train],
-              epochs=NumbItr,
-              batch_size=256,
-              verbose=1,
-              validation_split=0.1, callbacks=callbacks_list)
+    print("Training LSTM with {} h_neurons, {} h_layers and {:.2f} recurrent dropout".format(
+        neurons_per_layer, n_hidden_layers, dropout))
 
-    # evaluate the model
-    print('Evaluating model on test set...')
-    scores = model.evaluate(x_subject[test], y_subject[test], verbose=0)
-    print("Result on test set: %s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
-    cvscores.append(scores[1] * 100)
-    ii += 1
+    # define KFOLD-fold cross validation test harness
+    kfold = StratifiedKFold(n_splits=KFOLD, shuffle=True, random_state=SEED)
+    cvscores = []
+    test_set_acc = 0
+    ii = 1
+    conf_matrix_testing = None
+    conf_matrix_training = None
+    for train, test in kfold.split(x_subject, y_subject[:, 0]):
+        # create callbacks
+        model_name_str = "ModelSave/" + 'GRAZ_LSTM_' + '_run_' + str(ii)
 
-# print some evaluation statistics and write results to file
-print("%.2f%% (+/- %.2f%%)" % (np.mean(cvscores), np.std(cvscores)))
-cv_all_subjects = np.asarray(cvscores)
-print('Saving CV values to file....')
-np.savetxt("Results/" + 'GRAZ_CV_' + 'LSTM_' + str(DROPOUT) + 'do' + '.csv',
-           cv_all_subjects, delimiter=',', fmt='%2.4f')
-print('CV values successfully saved!\n')
+        # checkpoint = ModelCheckpoint(model_name_str, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+        # callbacks_list = [checkpoint]
+        # Fit the model
+        # initialize and create the model
+        model = LSTM_model(x_subject.shape[1:], num_layers=n_hidden_layers, num_hidden_neurons=neurons_per_layer,
+                           dropout=dropout, print_summary=False)
 
-# ## Load the trained model
+        # fit model. If you specify monitor=True, then the model will create callbacks
+        # and write its state to a HDF5 file
+        # NumbItr = int(neurons_per_layer * (n_hidden_layers + 1) / 30)
+        NumbItr = 10
 
-# In[ ]:
+        model.fit(x_subject[train], y_subject[train],
+                  epochs=NumbItr,
+                  batch_size=256,
+                  verbose=0,
+                  validation_split=0.1)
+
+        # evaluate the model
+        val_acc = model.evaluate(x_subject[test], y_subject[test], verbose=0)[1]
+        print("Validation accuracy on run {}/{}: {:.2f}".format(ii, KFOLD, val_acc * 100))
+        cvscores.append(val_acc * 100)
+        conf_matrix_testing = confusion_matrix(np.array(y_subject[test]).argmax(axis=-1),
+                                               model.predict(x_subject[test]).argmax(axis=-1))
+        conf_matrix_training = confusion_matrix(np.array(y_subject[train]).argmax(axis=-1),
+                                                model.predict(x_subject[train]).argmax(axis=-1))
+        ii += 1
+
+    # print some evaluation statistics and write results to file
+    # print("%.2f%% (+/- %.2f%%)" % (np.mean(cvscores), np.std(cvscores)))
+    # cv_all_subjects = np.asarray(cvscores)
+    # print('Saving CV values to file....')
+    # np.savetxt("Results/" + 'GRAZ_CV_' + 'LSTM_' + str(DROPOUT) + 'do' + '.csv',
+    #            cv_all_subjects, delimiter=',', fmt='%2.4f')
+    # print('CV values successfully saved!\n')
+    return {'loss': 100.0 - np.mean(cvscores), 'n_hidden_neurons': neurons_per_layer,
+            'n_hidden_layers': n_hidden_layers, 'dropout': dropout, 'status': STATUS_OK,
+            'avg_validation_acc': np.mean(cvscores), 'conf_matrix_training': conf_matrix_training,
+            "conf_matrix_testing": conf_matrix_testing}
 
 
-model.save('ModelSave/' + 'LSTMmonitoring.h5')  # creates a HDF5 file 'my_model.h5'
-model2 = load_model('ModelSave/' + 'LSTMmonitoring.h5',
-                    custom_objects={'Spectrogram': kapre.time_frequency.Spectrogram,
-                                    'Normalization2D': kapre.utils.Normalization2D})
+space = {'neurons_per_layer': hp.quniform('neurons_per_layer', 10, 500, 10),
+         'n_hidden_layers': hp.choice('n_hidden_layers', [1, 2, 5]),
+         'dropout': hp.uniform('dropout', 0.1, 1.0)
+         }
 
+bayes_trials = Trials()
+
+MAX_EVALS = 8
+
+# Optimize
+# best = fmin(fn=objective, space=space, algo=tpe.suggest,
+#             max_evals=MAX_EVALS, trials=bayes_trials)
+#
+# print("The results are:\n", best)
+
+best = {'dropout': 0.49299324051304194, 'n_hidden_layers': 2, 'neurons_per_layer': 290.0}
+
+res = objective(best)
+print("Average validation accuracy: {}".format(res['avg_validation_acc']))
+print("Confusion matrix of last fold (training):")
+print(res["conf_matrix_training"])
+print("Confusion matrix of last fold (testing):")
+print(res["conf_matrix_testing"])
+
+# model.save('ModelSave/' + 'LSTMmonitoring.h5')  # creates a HDF5 file 'my_model.h5'
+# model2 = load_model('ModelSave/' + 'LSTMmonitoring.h5',
+#                     custom_objects={'Spectrogram': kapre.time_frequency.Spectrogram,
+#                                     'Normalization2D': kapre.utils.Normalization2D})
