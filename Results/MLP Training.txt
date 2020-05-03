@@ -221,3 +221,13 @@ Result on test set: acc: 82.47%
 83.44% (+/- 0.91%)
 Saving CV values to file....
 CV values successfully saved!
+
+
+
+Confusion matrix of last fold (training):
+[[3650  294]
+ [ 413 3679]]
+Confusion matrix of last fold (testing):
+[[821 164]
+ [199 824]]
+

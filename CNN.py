@@ -231,12 +231,12 @@ bayes_trials = Trials()
 MAX_EVALS = 8
 
 # Optimize
-# best = fmin(fn=objective, space=space, algo=tpe.suggest,
-#             max_evals=MAX_EVALS, trials=bayes_trials)
-#
-# print("The results are:\n", best)
+best = fmin(fn=objective, space=space, algo=tpe.suggest,
+            max_evals=MAX_EVALS, trials=bayes_trials)
 
-best = {'filter1_s': 50.0, 'filter2_s': 90.0, 'filter3_s': 140.0, 'kernel_size': 4.0}
+print("The results are:\n", best)
+
+# best = {'filter1_s': 50.0, 'filter2_s': 90.0, 'filter3_s': 140.0, 'kernel_size': 4.0}
 
 res = objective(best)
 print("Average validation accuracy: {}".format(res['avg_validation_acc']))
