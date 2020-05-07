@@ -95,10 +95,10 @@ import keras
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Flatten
 from keras.layers import BatchNormalization, Dropout, Conv1D, MaxPooling1D
-from keras.models import load_model
-import kapre
-from kapre.utils import Normalization2D
-from kapre.time_frequency import Spectrogram
+# from keras.models import load_model
+# import kapre
+# from kapre.utils import Normalization2D
+# from kapre.time_frequency import Spectrogram
 from sklearn.metrics import confusion_matrix
 
 
@@ -231,12 +231,12 @@ bayes_trials = Trials()
 MAX_EVALS = 8
 
 # Optimize
-best = fmin(fn=objective, space=space, algo=tpe.suggest,
-            max_evals=MAX_EVALS, trials=bayes_trials)
+# best = fmin(fn=objective, space=space, algo=tpe.suggest,
+#             max_evals=MAX_EVALS, trials=bayes_trials)
+#
+# print("The results are:\n", best)
 
-print("The results are:\n", best)
-
-# best = {'filter1_s': 50.0, 'filter2_s': 90.0, 'filter3_s': 140.0, 'kernel_size': 4.0}
+best = {'filter1_s': 90.0, 'filter2_s': 40.0, 'filter3_s': 60.0, 'kernel_size': 6.0}
 
 res = objective(best)
 print("Average validation accuracy: {}".format(res['avg_validation_acc']))
