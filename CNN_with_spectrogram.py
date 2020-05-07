@@ -76,8 +76,6 @@ import keras
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Flatten
 from keras.layers import BatchNormalization, Dropout, Conv2D, MaxPooling2D
-from keras.models import load_model
-import kapre
 from kapre.utils import Normalization2D
 from kapre.time_frequency import Spectrogram
 
@@ -162,7 +160,7 @@ for train, test in kfold.split(x_subject, y_subject[:, 0]):
     model.fit(x_subject[train], y_subject[train],
               epochs=NumbItr,
               batch_size=256,
-              verbose=0,
+              verbose=1,
               validation_split=0.1, callbacks=callbacks_list)
 
     # evaluate the model

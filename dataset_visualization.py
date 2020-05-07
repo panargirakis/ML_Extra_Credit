@@ -1,4 +1,3 @@
-
 from __future__ import print_function
 import sys
 
@@ -54,27 +53,68 @@ x_train, y_train = utils.load_preprocess_data(grazb_data, True, LOWCUT,
 
 # ## Augment data
 
-x_augmented, y_augmented = gumpy.signal.sliding_window(data=x_train[:, :, :],
-                                                       labels=y_train[:, :],
-                                                       window_sz=4 * FS,
-                                                       n_hop=FS // 10,
-                                                       n_start=FS * 1)
+# x_augmented, y_augmented = gumpy.signal.sliding_window(data=x_train[:, :, :],
+#                                                        labels=y_train[:, :],
+#                                                        window_sz=4 * FS,
+#                                                        n_hop=FS // 10,
+#                                                        n_start=FS * 1)
 vis_x = np.rollaxis(x_train, 2, 1)  # make sure it is "run", "sensor" "sample"
-df = pd.DataFrame({"signal": vis_x[0][0]})
-df["second"] = df['signal'].index / (2000/8)
-fig = px.line(df, x="second", y="signal", title="Raw signal of 1 recording")
-# fig.show()
+df = pd.DataFrame({"signal_avg_0": vis_x[0][0] + vis_x[1][0] + vis_x[2][0] + vis_x[3][0] + vis_x[4][0]
+                             + vis_x[5][0] + vis_x[6][0] + vis_x[7][0] + vis_x[8][0] + vis_x[9][0]
+                   })
+df["signal_avg_0"] /= 10
+df["signal_avg_1"] = vis_x[-1][0] + vis_x[-2][0] + vis_x[-3][0] + vis_x[-4][0] + vis_x[-5][0] + vis_x[-6][0] + vis_x[-7][0] + vis_x[-8][0] + vis_x[-9][0] + vis_x[-10][0]
+df["signal_avg_1"] /= 10
+df["signal_0"] = vis_x[0][0]
+df["signal_1"] = vis_x[-1][0]
 
-# issue: to go down to 1Hz, a window of 1250 is needed
-# window size = 5 * sampling rage / lowest freq (156 for down to 8 hz, start of alpha waves)
-freqs, bins, Pxx = signal.spectrogram(df["signal"], FS, nperseg=125)
-plt.pcolormesh(bins, freqs, Pxx)  # show in log scale (do average first then log)
+
+plt.figure(figsize=[5, 5])
+plt.set_cmap(cmap=plt.get_cmap("inferno"))
+plt.title("Average signal of 10 recordings with y=0")
+# default is power spectral density
+plt.specgram(df["signal_avg_0"], NFFT=512, Fs=FS, scale="linear", noverlap=64, detrend="linear")
 plt.ylim(top=100)
 plt.yticks(np.arange(0, 100, step=5))
 plt.ylabel('Frequency [Hz]')
 plt.xlabel('Time [sec]')
-plt.savefig("Results/spectrogram.png")
+plt.savefig("Results/spectrogram_mpl_avg_y0.png")
 
+plt.clf()
 
-print("Filtered data shape: {}".format(x_train.shape))
-print("Augmented data shape: {}".format(x_augmented.shape))
+plt.figure(figsize=[5, 5])
+plt.set_cmap(cmap=plt.get_cmap("inferno"))
+plt.title("Signal a recording with y=0")
+# default is power spectral density
+plt.specgram(df["signal_0"], NFFT=512, Fs=FS, scale="linear", noverlap=64, detrend="linear")
+plt.ylim(top=100)
+plt.yticks(np.arange(0, 100, step=5))
+plt.ylabel('Frequency [Hz]')
+plt.xlabel('Time [sec]')
+plt.savefig("Results/spectrogram_mpl_y0.png")
+
+plt.clf()
+
+plt.figure(figsize=[5, 5])
+plt.set_cmap(cmap=plt.get_cmap("inferno"))
+plt.title("Average signal of 10 recordings with y=1")
+# default is power spectral density
+plt.specgram(df["signal_avg_1"], NFFT=512, Fs=FS, scale="linear", noverlap=64, detrend="linear")
+plt.ylim(top=100)
+plt.yticks(np.arange(0, 100, step=5))
+plt.ylabel('Frequency [Hz]')
+plt.xlabel('Time [sec]')
+plt.savefig("Results/spectrogram_mpl_avg_y1.png")
+
+plt.clf()
+
+plt.figure(figsize=[5, 5])
+plt.set_cmap(cmap=plt.get_cmap("inferno"))
+plt.title("Signal a recording with y=1")
+# default is power spectral density
+plt.specgram(df["signal_1"], NFFT=512, Fs=FS, scale="linear", noverlap=64, detrend="linear")
+plt.ylim(top=100)
+plt.yticks(np.arange(0, 100, step=5))
+plt.ylabel('Frequency [Hz]')
+plt.xlabel('Time [sec]')
+plt.savefig("Results/spectrogram_mpl_y1.png")
