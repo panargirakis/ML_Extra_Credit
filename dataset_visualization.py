@@ -70,6 +70,7 @@ df["signal_1"] = vis_x[-1][0]
 
 
 plt.figure(figsize=[5, 5])
+plt.set_cmap(cmap=plt.get_cmap("inferno"))
 plt.title("Average signal of 10 recordings with y=0")
 # default is power spectral density
 plt.specgram(df["signal_avg_0"], NFFT=512, Fs=FS, scale="linear", noverlap=64, detrend="linear")
@@ -82,6 +83,7 @@ plt.savefig("Results/spectrogram_mpl_avg_y0.png")
 plt.clf()
 
 plt.figure(figsize=[5, 5])
+plt.set_cmap(cmap=plt.get_cmap("inferno"))
 plt.title("Signal a recording with y=0")
 # default is power spectral density
 plt.specgram(df["signal_0"], NFFT=512, Fs=FS, scale="linear", noverlap=64, detrend="linear")
@@ -94,6 +96,7 @@ plt.savefig("Results/spectrogram_mpl_y0.png")
 plt.clf()
 
 plt.figure(figsize=[5, 5])
+plt.set_cmap(cmap=plt.get_cmap("inferno"))
 plt.title("Average signal of 10 recordings with y=1")
 # default is power spectral density
 plt.specgram(df["signal_avg_1"], NFFT=512, Fs=FS, scale="linear", noverlap=64, detrend="linear")
@@ -106,6 +109,7 @@ plt.savefig("Results/spectrogram_mpl_avg_y1.png")
 plt.clf()
 
 plt.figure(figsize=[5, 5])
+plt.set_cmap(cmap=plt.get_cmap("inferno"))
 plt.title("Signal a recording with y=1")
 # default is power spectral density
 plt.specgram(df["signal_1"], NFFT=512, Fs=FS, scale="linear", noverlap=64, detrend="linear")
