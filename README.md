@@ -1,5 +1,5 @@
 # Introduction
-![alt text](https://www.wpi.edu/sites/default/files/inline-image/Offices/Marketing-Communications/WPI_Inst_Prim_FulClr.png)
+![alt text](https://www.wpi.edu/sites/default/files/inline-image/Offices/Marketing-Communications/WPI_Inst_Prim_FulClr.png=150x)
 
 This repository contains examples of different models to solve BCI Competition Graz 2b classification challenge. It was developed with the guidance of Prof. Ali Yousefi for WPI CS 4342. 
 
