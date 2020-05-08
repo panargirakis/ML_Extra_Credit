@@ -16,7 +16,7 @@ import gumpy
 import numpy as np
 import utils
 from sklearn.model_selection import StratifiedKFold
-from hyperopt import hp, Trials, STATUS_OK
+from hyperopt import hp, Trials, STATUS_OK, fmin, tpe
 from sklearn.metrics import confusion_matrix, cohen_kappa_score
 from keras.models import load_model
 
@@ -194,7 +194,7 @@ bayes_trials = Trials()
 MAX_EVALS = 8
 
 # Optimize (comment back in to run optimization)
-# best = fmin(fn=objective, space=space, algo=tpe.suggest,
+# best = fmin(fn=train_model, space=space, algo=tpe.suggest,
 #             max_evals=MAX_EVALS, trials=bayes_trials)
 #
 # print("The results are:\n", best)

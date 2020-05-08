@@ -9,7 +9,7 @@ sys.path.append('./gumpy')
 
 import gumpy
 import numpy as np
-from hyperopt import hp, Trials, STATUS_OK
+from hyperopt import hp, Trials, STATUS_OK, fmin, tpe
 from keras.models import load_model
 
 #
@@ -234,7 +234,7 @@ bayes_trials = Trials()
 MAX_EVALS = 8
 
 # Optimize (comment back in to run optimization)
-# best = fmin(fn=objective, space=space, algo=tpe.suggest,
+# best = fmin(fn=train_model, space=space, algo=tpe.suggest,
 #             max_evals=MAX_EVALS, trials=bayes_trials)
 #
 # print("The results are:\n", best)
