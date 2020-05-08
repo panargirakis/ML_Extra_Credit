@@ -7,7 +7,7 @@ The original work was done by Mohammad Reza Razei and was extended by Panos Argy
 
 # Usage
 
-Download the Graz 2b dataset and place all the .mat files at /data/Graz/.
+Download the Graz 2b dataset and place all the .mat files at data/Graz/ (relative to the project directory).
 
 Install all the requirements in requirements.txt:
 
