@@ -1,17 +1,18 @@
 from __future__ import print_function
+
 import os
+
+import kapre
+from keras.models import load_model
+
 os.environ["THEANO_FLAGS"] = "device=gpu0"
-import os.path
-from datetime import datetime
 import sys
 sys.path.append('./gumpy')
 
 import gumpy
 import numpy as np
-import scipy.io
-import matplotlib.pyplot as plt
-# get_ipython().run_line_magic('matplotlib', 'inline')
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, cohen_kappa_score
+from keras.models import load_model
 
 
 import utils
@@ -72,7 +73,6 @@ x_subject = np.rollaxis(x_subject, 2, 1)
 
 
 # from .model import KerasModel
-import keras
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Flatten
 from keras.layers import BatchNormalization, Dropout, Conv2D, MaxPooling2D
@@ -143,6 +143,8 @@ cvscores = []
 ii = 1
 conf_matrix_testing = None
 conf_matrix_training = None
+training_kappas = []
+testing_kappas = []
 for train, test in kfold.split(x_subject, y_subject[:, 0]):
     print('Run ' + str(ii) + '...')
     # create callbacks
@@ -168,14 +170,26 @@ for train, test in kfold.split(x_subject, y_subject[:, 0]):
     scores = model.evaluate(x_subject[test], y_subject[test], verbose=0)
     print("Result on test set: %s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
     cvscores.append(scores[1] * 100)
-    conf_matrix_testing = confusion_matrix(np.array(y_subject[test]).argmax(axis=-1),
-                                           model.predict(x_subject[test]).argmax(axis=-1))
-    conf_matrix_training = confusion_matrix(np.array(y_subject[train]).argmax(axis=-1),
-                                            model.predict(x_subject[train]).argmax(axis=-1))
-    print("Confusion matrix of last fold (training):")
-    print(conf_matrix_training)
-    print("Confusion matrix of last fold (testing):")
-    print(conf_matrix_testing)
+
+    # useful for metrics
+    true_labels_train = np.array(y_subject[train]).argmax(axis=-1)
+    pred_labels_train = model.predict(x_subject[train]).argmax(axis=-1)
+    true_labels_test = np.array(y_subject[test]).argmax(axis=-1)
+    pred_labels_test = model.predict(x_subject[test]).argmax(axis=-1)
+
+    # calc confusion matrices
+    conf_matrix_testing = confusion_matrix(true_labels_test, pred_labels_test)
+    conf_matrix_training = confusion_matrix(true_labels_train, pred_labels_train)
+
+    # calc kappa coefficients
+    testing_kappa = cohen_kappa_score(true_labels_test, pred_labels_test)
+    training_kappa = cohen_kappa_score(true_labels_train, pred_labels_train)
+    print("Training kappa: {:.3f}  Testing kappa: {:.3f}".format(training_kappa, testing_kappa))
+
+    if ii == kfold:
+        model.save('CNN_with_spectrogram_.h5')  # save the model for future use
+        print("Model saved to disk!")
+
     ii += 1
 
 # print some evaluation statistics and write results to file
@@ -186,12 +200,11 @@ cv_all_subjects = np.asarray(cvscores)
 #            cv_all_subjects, delimiter=',', fmt='%2.4f')
 # print('CV values successfully saved!\n')
 
-print("Confusion matrix of last fold (training):")
+print("Confusion matrix of last fold (training):  with kappa: {}".format(training_kappas[-1]))
 print(conf_matrix_training)
-print("Confusion matrix of last fold (testing):")
+print("Confusion matrix of last fold (testing):  with kappa: {}".format(testing_kappas[-1]))
 print(conf_matrix_testing)
 
-# model.save('ModelSave/' + 'CNN_STFTmonitoring.h5')  # creates a HDF5 file 'my_model.h5'
-# model2 = load_model('ModelSave/' + 'CNN_STFTmonitoring.h5',
+# model2 = load_model('CNN_with_spectrogram_.h5',
 #                     custom_objects={'Spectrogram': kapre.time_frequency.Spectrogram,
 #                                     'Normalization2D': kapre.utils.Normalization2D})

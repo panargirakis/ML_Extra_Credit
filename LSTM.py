@@ -6,6 +6,7 @@
 
 
 from __future__ import print_function
+
 import os
 
 os.environ["THEANO_FLAGS"] = "device=gpu0"
@@ -16,8 +17,9 @@ sys.path.append('./gumpy')
 import gumpy
 import numpy as np
 import utils
-from hyperopt import hp, tpe, Trials, fmin, STATUS_OK
-from sklearn.metrics import confusion_matrix
+from hyperopt import hp, Trials, STATUS_OK
+from sklearn.metrics import confusion_matrix, cohen_kappa_score
+from keras.models import load_model
 
 # ## Setup parameters for the model and data
 # Before we jump into the processing, we first wish to specify some parameters (e.g. frequencies) that we know from the data.
@@ -72,8 +74,6 @@ x_subject = np.rollaxis(x_subject, 2, 1)
 
 # from .model import KerasModel
 from keras.models import Sequential
-from keras.models import load_model
-import kapre
 
 # # LSTM
 
@@ -108,10 +108,9 @@ def LSTM_model(input_shape, num_hidden_neurons=128,
 
 
 from sklearn.model_selection import StratifiedKFold
-from keras.callbacks import ModelCheckpoint
 
 
-def objective(params):
+def train_model(params):
     neurons_per_layer, n_hidden_layers, dropout = int(params["neurons_per_layer"]), int(params["n_hidden_layers"]), \
                                                   params["dropout"]
 
@@ -125,6 +124,8 @@ def objective(params):
     ii = 1
     conf_matrix_testing = None
     conf_matrix_training = None
+    training_kappas = []
+    testing_kappas = []
     for train, test in kfold.split(x_subject, y_subject[:, 0]):
         # create callbacks
         model_name_str = "ModelSave/" + 'GRAZ_LSTM_' + '_run_' + str(ii)
@@ -151,10 +152,28 @@ def objective(params):
         val_acc = model.evaluate(x_subject[test], y_subject[test], verbose=0)[1]
         print("Validation accuracy on run {}/{}: {:.2f}".format(ii, KFOLD, val_acc * 100))
         cvscores.append(val_acc * 100)
-        conf_matrix_testing = confusion_matrix(np.array(y_subject[test]).argmax(axis=-1),
-                                               model.predict(x_subject[test]).argmax(axis=-1))
-        conf_matrix_training = confusion_matrix(np.array(y_subject[train]).argmax(axis=-1),
-                                                model.predict(x_subject[train]).argmax(axis=-1))
+
+        # useful for metrics
+        true_labels_train = np.array(y_subject[train]).argmax(axis=-1)
+        pred_labels_train = model.predict(x_subject[train]).argmax(axis=-1)
+        true_labels_test = np.array(y_subject[test]).argmax(axis=-1)
+        pred_labels_test = model.predict(x_subject[test]).argmax(axis=-1)
+
+        # calc confusion matrices
+        conf_matrix_testing = confusion_matrix(true_labels_test, pred_labels_test)
+        conf_matrix_training = confusion_matrix(true_labels_train, pred_labels_train)
+
+        # calc kappa coefficients
+        testing_kappa = cohen_kappa_score(true_labels_test, pred_labels_test)
+        training_kappa = cohen_kappa_score(true_labels_train, pred_labels_train)
+        print("Training kappa: {:.3f}  Testing kappa: {:.3f}".format(training_kappa, testing_kappa))
+        training_kappas.append(training_kappa)
+        testing_kappas.append(testing_kappa)
+
+        if ii == kfold:
+            model.save('LSTM_no_spectrogram_.h5')  # save the model for future use
+            print("Model saved to disk!")
+
         ii += 1
 
     # print some evaluation statistics and write results to file
@@ -167,7 +186,8 @@ def objective(params):
     return {'loss': 100.0 - np.mean(cvscores), 'n_hidden_neurons': neurons_per_layer,
             'n_hidden_layers': n_hidden_layers, 'dropout': dropout, 'status': STATUS_OK,
             'avg_validation_acc': np.mean(cvscores), 'conf_matrix_training': conf_matrix_training,
-            "conf_matrix_testing": conf_matrix_testing}
+            "conf_matrix_testing": conf_matrix_testing, "training_kappas": training_kappas,
+            "testing_kappas": testing_kappas}
 
 
 space = {'neurons_per_layer': hp.quniform('neurons_per_layer', 10, 500, 10),
@@ -179,22 +199,21 @@ bayes_trials = Trials()
 
 MAX_EVALS = 8
 
-# Optimize
+# Optimize (comment back in to run optimization)
 # best = fmin(fn=objective, space=space, algo=tpe.suggest,
 #             max_evals=MAX_EVALS, trials=bayes_trials)
 #
 # print("The results are:\n", best)
 
+# comment out if running optimization again
 best = {'dropout': 0.49299324051304194, 'n_hidden_layers': 2, 'neurons_per_layer': 290.0}
 
-res = objective(best)
+res = train_model(best)
 print("Average validation accuracy: {}".format(res['avg_validation_acc']))
-print("Confusion matrix of last fold (training):")
+print("Confusion matrix of last fold (training):  with kappa: {}".format(res["training_kappas"][-1]))
 print(res["conf_matrix_training"])
-print("Confusion matrix of last fold (testing):")
+print("Confusion matrix of last fold (testing):  with kappa: {}".format(res["testing_kappas"][-1]))
 print(res["conf_matrix_testing"])
 
-# model.save('ModelSave/' + 'LSTMmonitoring.h5')  # creates a HDF5 file 'my_model.h5'
-# model2 = load_model('ModelSave/' + 'LSTMmonitoring.h5',
-#                     custom_objects={'Spectrogram': kapre.time_frequency.Spectrogram,
-#                                     'Normalization2D': kapre.utils.Normalization2D})
+# model2 = load_model('LSTM_no_spectrogram_.h5')
+

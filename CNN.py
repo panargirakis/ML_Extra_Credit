@@ -1,19 +1,16 @@
 from __future__ import print_function
-import os;
+
+import os
 
 os.environ["THEANO_FLAGS"] = "device=gpu0"
-import os.path
-from datetime import datetime
 import sys
 
 sys.path.append('./gumpy')
 
 import gumpy
 import numpy as np
-import scipy.io
-import matplotlib.pyplot as plt
-# get_ipython().run_line_magic('matplotlib', 'inline')
-from hyperopt import hp, tpe, Trials, fmin, STATUS_OK
+from hyperopt import hp, Trials, STATUS_OK
+from keras.models import load_model
 
 #
 # To use the models provided by `gumpy-deeplearning`, we have to set the path to the models directory and import it. If you installed `gumpy-deeplearning` as a module, this step may not be required.
@@ -55,8 +52,6 @@ NumbItr = 10
 #
 # Before training and testing a model, we need some data. The following code shows how to load a dataset using ``gumpy``.
 
-# In[4]:
-
 
 # specify the location of the GrazB datasets
 data_dir = './data/Graz'
@@ -91,26 +86,15 @@ x_subject = np.rollaxis(x_subject, 2, 1)
 
 
 # from .model import KerasModel
-import keras
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Flatten
 from keras.layers import BatchNormalization, Dropout, Conv1D, MaxPooling1D
-# from keras.models import load_model
-# import kapre
-# from kapre.utils import Normalization2D
-# from kapre.time_frequency import Spectrogram
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, cohen_kappa_score
 
 
 def CNN_model(input_shape, filter1_s=96, filter2_s=64, filter3_s=128, kernel_size=3, dropout=0.5, print_summary=False):
     # basis of the CNN_STFT is a Sequential network
     model = Sequential()
-
-    # spectrogram creation using STFT
-    # model.add(Spectrogram(n_dft=128, n_hop=16, input_shape=input_shape,
-    #                       return_decibel_spectrogram=False, power_spectrogram=2.0,
-    #                       trainable_kernel=False, name='static_stft'))
-    # model.add(Normalization2D(str_axis='freq'))
 
     # Conv Block 1
     model.add(Conv1D(filters=filter1_s, kernel_size=kernel_size, name='conv1.2',
@@ -153,14 +137,11 @@ def CNN_model(input_shape, filter1_s=96, filter2_s=64, filter3_s=128, kernel_siz
     return model
 
 
-# In[ ]:
-
 
 from sklearn.model_selection import StratifiedKFold
-from keras.callbacks import ModelCheckpoint
 
 
-def objective(params):
+def train_model(params):
     filter1_s, filter2_s, filter3_s, kernel_size = int(params['filter1_s']), int(params['filter2_s']), \
                                                    int(params['filter3_s']), int(params['kernel_size'])
 
@@ -173,7 +154,8 @@ def objective(params):
     cvscores = []
     conf_matrix_training = None
     conf_matrix_testing = None
-    test_set_acc = 0
+    training_kappas = []
+    testing_kappas = []
     ii = 1
     for train, test in kfold.split(x_subject, y_subject[:, 0]):
         # create callbacks
@@ -203,8 +185,28 @@ def objective(params):
         val_acc = model.evaluate(test_reshaped, y_subject[test], verbose=0)[1]
         print("Validation accuracy on run {}/{}: {:.2f}".format(ii, KFOLD, val_acc * 100))
         cvscores.append(val_acc * 100)
-        conf_matrix_testing = confusion_matrix(np.array(y_subject[test]).argmax(axis=-1), model.predict(test_reshaped).argmax(axis=-1))
-        conf_matrix_training = confusion_matrix(np.array(y_subject[train]).argmax(axis=-1), model.predict(reshaped).argmax(axis=-1))
+
+        # useful for metrics
+        true_labels_train = np.array(y_subject[train]).argmax(axis=-1)
+        pred_labels_train = model.predict(x_subject[train]).argmax(axis=-1)
+        true_labels_test = np.array(y_subject[test]).argmax(axis=-1)
+        pred_labels_test = model.predict(x_subject[test]).argmax(axis=-1)
+
+        # calc confusion matrices
+        conf_matrix_testing = confusion_matrix(true_labels_test, pred_labels_test)
+        conf_matrix_training = confusion_matrix(true_labels_train, pred_labels_train)
+
+        # calc kappa coefficients
+        testing_kappa = cohen_kappa_score(true_labels_test, pred_labels_test)
+        training_kappa = cohen_kappa_score(true_labels_train, pred_labels_train)
+        print("Training kappa: {:.3f}  Testing kappa: {:.3f}".format(training_kappa, testing_kappa))
+        training_kappas.append(training_kappa)
+        testing_kappas.append(testing_kappa)
+
+        if ii == kfold:
+            model.save('CNN_no_spectrogram_.h5')  # save the model for future use
+            print("Model saved to disk!")
+
         ii += 1
 
     # print some evaluation statistics and write results to file
@@ -217,7 +219,8 @@ def objective(params):
     return {'loss': 100.0 - np.mean(cvscores), 'filter1_s': filter1_s,
             'filter2_s': filter2_s, 'filter3_s': filter3_s, 'kernel_size': kernel_size, 'status': STATUS_OK,
             'avg_validation_acc': np.mean(cvscores), 'conf_matrix_training': conf_matrix_training,
-            "conf_matrix_testing": conf_matrix_testing}
+            "conf_matrix_testing": conf_matrix_testing, "training_kappas": training_kappas,
+            "testing_kappas": testing_kappas}
 
 
 space = {'filter1_s': hp.quniform('filter1_s', 30, 150, 10),
@@ -230,22 +233,20 @@ bayes_trials = Trials()
 
 MAX_EVALS = 8
 
-# Optimize
+# Optimize (comment back in to run optimization)
 # best = fmin(fn=objective, space=space, algo=tpe.suggest,
 #             max_evals=MAX_EVALS, trials=bayes_trials)
 #
 # print("The results are:\n", best)
 
+# comment out if running optimization
 best = {'filter1_s': 90.0, 'filter2_s': 40.0, 'filter3_s': 60.0, 'kernel_size': 6.0}
 
-res = objective(best)
+res = train_model(best)
 print("Average validation accuracy: {}".format(res['avg_validation_acc']))
-print("Confusion matrix of last fold (training):")
+print("Confusion matrix of last fold (training):  with kappa: {}".format(res["training_kappas"][-1]))
 print(res["conf_matrix_training"])
-print("Confusion matrix of last fold (testing):")
+print("Confusion matrix of last fold (testing):  with kappa: {}".format(res["testing_kappas"][-1]))
 print(res["conf_matrix_testing"])
 
-# model.save('ModelSave/' + 'CNN_STFTmonitoring.h5')  # creates a HDF5 file 'my_model.h5'
-# model2 = load_model('ModelSave/' + 'CNN_STFTmonitoring.h5',
-#                     custom_objects={'Spectrogram': kapre.time_frequency.Spectrogram,
-#                                     'Normalization2D': kapre.utils.Normalization2D})
+# model2 = load_model('CNN_no_spectrogram_.h5')
