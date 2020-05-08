@@ -1,10 +1,13 @@
 # Introduction
+![alt text](https://www.wpi.edu/sites/default/files/inline-image/Offices/Marketing-Communications/WPI_Inst_Prim_FulClr.png)
 
-This repository contains examples of different models to solve BCI Competition Graz 2b classification challenge.
+This repository contains examples of different models to solve BCI Competition Graz 2b classification challenge. It was developed with the guidance of Prof. Ali Yousefi for WPI CS 4342. 
 
 The original work was done by Mohammad Reza Razei and was extended by Panos Argyrakis.
 
 # Usage
+
+Download the Graz 2b dataset and place all the .mat files at /data/Graz/.
 
 Install all the requirements in requirements.txt:
 
