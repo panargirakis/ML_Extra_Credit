@@ -172,8 +172,8 @@ def train_model(params):
         # fit model. If you specify monitor=True, then the model will create callbacks
         # and write its state to a HDF5 file
         num_samples, row_num, col_num = x_subject[train].shape
-        reshaped = np.reshape(x_subject[train], (num_samples, col_num, row_num))
-        model.fit(reshaped, y_subject[train],
+        x_train_reshaped = np.reshape(x_subject[train], (num_samples, col_num, row_num))
+        model.fit(x_train_reshaped, y_subject[train],
                   epochs=NumbItr,
                   batch_size=256,
                   verbose=0,
@@ -188,9 +188,9 @@ def train_model(params):
 
         # useful for metrics
         true_labels_train = np.array(y_subject[train]).argmax(axis=-1)
-        pred_labels_train = model.predict(x_subject[train]).argmax(axis=-1)
+        pred_labels_train = model.predict(x_train_reshaped).argmax(axis=-1)
         true_labels_test = np.array(y_subject[test]).argmax(axis=-1)
-        pred_labels_test = model.predict(x_subject[test]).argmax(axis=-1)
+        pred_labels_test = model.predict(test_reshaped).argmax(axis=-1)
 
         # calc confusion matrices
         conf_matrix_testing = confusion_matrix(true_labels_test, pred_labels_test)
